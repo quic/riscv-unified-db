@@ -111,6 +111,24 @@ class Extension < ArchDefObject
     @params = []
     if @data.key?("params")
       @data["params"].each do |param_name, param_data|
+        also_defined_in = []
+        unless param_data["also_defined_in"].nil?
+          if param_data["also_defined_in"].is_a?(String)
+            other_ext = arch_def.extension(param_data["also_defined_in"])
+            raise "Definition error in #{name}.#{param_name}: #{param_data['also_defined_in']} is not a known extension" if other_ext.nil?
+            also_defined_in << other_ext
+          else
+            unless param_data["also_defined_in"].is_a?(Array) && param_data["also_defined_in"].all? { |e| e.is_a?(String) }
+              raise "schema error: also_defined_in should be a string or array of strings"
+            end
+
+            param_data["also_defined_in"].each do |other_ext_name|
+              other_ext = arch_def.extension(other_ext_name)
+              raise "Definition error in #{name}.#{param_name}: #{param_data['also_defined_in']} is not a known extension" if other_ext.nil?
+              also_defined_in << other_ext
+            end
+          end
+        end
         @params << ExtensionParameter.new(
           param_name,
           param_data["description"],
