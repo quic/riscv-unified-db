@@ -25,18 +25,18 @@ qc32.addsat:
     vs: always
     vu: always
   operation(): |
-    XReg sum = X[rs1] + X[rs2];
+    XReg result = X[rs1] + X[rs2];
     XReg most_negative_number = 1 << (xlen() - 1);
     XReg most_positive_number = (1 << (xlen() - 1)) - 1;
     # overflow occurs if the operands are the same sign and the result is a different sign
     if (X[rs1][xlen()-1] == X[rs2][xlen()-1]) {
-      if (sum[xlen()-1] != X[rs1][xlen()-1]) {
+      if (result[xlen()-1] != X[rs1][xlen()-1]) {
         if ($signed(X[rs1]) < 0) {
-          X[rd] = most_negative_number;
+          result = most_negative_number;
         } else {
-          X[rd] = most_positive_number;
+          result = most_positive_number;
         }
       }
     }
     # otherwise, overflow did not occur
-    X[rd] = sum;
+    X[rd] = result;
