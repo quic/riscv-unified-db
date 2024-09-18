@@ -288,6 +288,7 @@ end
 class ExtensionRequirement
   # @return [String] Extension name
   attr_reader :name
+  attr_reader :note
 
   # @return [Gem::Requirement] Version requirement
   def version_requirement
@@ -300,7 +301,7 @@ class ExtensionRequirement
 
   # @param name [#to_s] Extension name
   # @param requirements (see Gem::Requirement#new)
-  def initialize(name, *requirements)
+  def initialize(name, *requirements, note: nil)
     @name = name.to_s
     requirements =
       if requirements.empty?
@@ -309,6 +310,7 @@ class ExtensionRequirement
         requirements
       end
     @requirement = Gem::Requirement.new(requirements)
+    @note = note
   end
 
   # @overload
