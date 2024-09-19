@@ -10,7 +10,7 @@ C:
     name: Creative Commons Attribution 4.0 International License
     url: https://creativecommons.org/licenses/by/4.0/
   versions:
-  - version: 2.2
+  - version: "2.2.0"
     state: ratified
     ratification_date: 2019-12
   description: |
