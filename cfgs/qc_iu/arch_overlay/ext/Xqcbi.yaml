@@ -18,6 +18,9 @@ Xqcbi:
     The Xqcbi extension includes twelve conditional branch instructions that use an immediate
     operand for a source.
 
+    All instructions in Xqcbi following the same relocation type as standard RISC-V branches
+    in the base architecture (e.g., BEQ, BNE, etc.).
+
   doc_license:
     name: Creative Commons Attribution 4.0 International License
     url: https://creativecommons.org/licenses/by/4.0/

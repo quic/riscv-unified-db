@@ -4,7 +4,7 @@ require 'erb'
 pend_template = <<~YAML
   # yaml-language-server: $schema=../../../../../schemas/csr_schema.json
 
-  mclicip<%= num %>:
+  qc.mclicip<%= num %>:
     long_name: IRQ Pending <%= num %>
     address: 0x<%= (0x7f0 + num).to_s(16) %>
     length: 32
@@ -18,14 +18,14 @@ pend_template = <<~YAML
         type: RW
         reset_value: 0
         location: <%= i %>
-        description: IRQ<%= num*32 + 1 %> pending
+        description: IRQ<%= num*32 + i %> pending
       <%- end -%>
 YAML
 
 en_template = <<~YAML
   # yaml-language-server: $schema=../../../../../schemas/csr_schema.json
 
-  mclicie<%= num %>:
+  qc.mclicie<%= num %>:
     long_name: IRQ Enable <%= num %>
     address: 0x<%= (0x7f0 + num).to_s(16) %>
     length: 32
@@ -39,7 +39,7 @@ en_template = <<~YAML
         type: RW
         reset_value: 0
         location: <%= i %>
-        description: IRQ<%= num*32 + 1 %> enabled
+        description: IRQ<%= num*32 + i %> enabled
       <%- end -%>
 YAML
 
@@ -47,10 +47,10 @@ root = File.dirname(__FILE__)
 
 erb = ERB.new(pend_template, trim_mode: '-')
 8.times do |num|
-  File.write("#{root}/mclicip#{num}.yaml", erb.result(binding))
+  File.write("#{root}/qc.mclicip#{num}.yaml", erb.result(binding))
 end
 
 erb = ERB.new(en_template, trim_mode: '-')
 8.times do |num|
-  File.write("#{root}/mclicie#{num}.yaml", erb.result(binding))
+  File.write("#{root}/qc.mclicie#{num}.yaml", erb.result(binding))
 end
