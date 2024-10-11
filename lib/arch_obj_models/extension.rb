@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "obj"
+require_relative "schema"
 
 # A parameter (AKA option, AKA implementation-defined value) supported by an extension
 class ExtensionParameter
@@ -20,7 +21,15 @@ class ExtensionParameter
   # @return [Extension] The extension that defines this parameter
   attr_reader :ext
 
-  def initialize(name, desc, schema, extra_validation, ext)
+  # @returns [Idl::Type] Type of the parameter
+  attr_reader :type
+
+  # Pretty convert extension schema to a string.
+  def schema_type
+    Schema.new(@schema).to_pretty_s
+  end
+
+  def initialize(name, desc, schema, extra_validation, exts)
     @name = name
     @desc = desc
     @schema = schema
