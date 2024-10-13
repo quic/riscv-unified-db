@@ -1,0 +1,124 @@
+# yaml-language-server: $schema=../../../../schemas/ext_schema.json
+
+Xqci:
+  type: unprivileged
+  long_name: Qualcomm uC extensions
+  versions:
+  - version: 0.1
+    state: development
+    ratification_date: null
+    contributors:
+    - name: Albert Yosher
+      company: Qualcomm Technologies, Inc.
+      email: ayosher@qti.qualcomm.com
+    - name: Derek Hower
+      company: Qualcomm Technologies, Inc.
+      email: dhower@qti.qualcomm.com
+  - version: 0.2
+    state: development
+    ratification_date: null
+    contributors:
+    - name: Albert Yosher
+      company: Qualcomm Technologies, Inc.
+      email: ayosher@qti.qualcomm.com
+    - name: Derek Hower
+      company: Qualcomm Technologies, Inc.
+      email: dhower@qti.qualcomm.com
+    changes: |
+      * Splits Xqci into sub-extensions based on instruction type
+      * Removed shXadd instructions in favor of generic shladd
+  - version: 0.3
+    state: development
+    ratification_date: null
+    contributors:
+    - name: Albert Yosher
+      company: Qualcomm Technologies, Inc.
+      email: ayosher@qti.qualcomm.com
+    - name: Derek Hower
+      company: Qualcomm Technologies, Inc.
+      email: dhower@qti.qualcomm.com
+    changes: |
+      * Rename extension and sub extensions to match toolchain guidelines
+      * Rename mnemonics to match toolchain guidelines
+      * Ensure every instruction belongs to at least one sub extension
+    implies:
+    - [Xqcia, 0.1]
+    - [Xqciac, 0.1]
+    - [Xqcibi, 0.1]
+    - [Xqcibm, 0.1]
+    - [Xqcicli, 0.1]
+    - [Xqcicm, 0.1]
+    - [Xqcics, 0.1]
+    - [Xqcicsr, 0.1]
+    - [Xqciint, 0.1]
+    - [Xqcilb, 0.1]
+    - [Xqcili, 0.1]
+    - [Xqcilia, 0.1]
+    - [Xqcilo, 0.1]
+    - [Xqcilsm, 0.1]
+    - [Xqcisls, 0.1]
+  description: |
+    The Xqci extension includes a set of instructions that improve RISC-V code density and
+    performance in microontrollers. It fills several gaps:
+
+    Long immediates::
+    --
+    This extension provides wide-immediate versions of
+    loads, stores, branches, jumps, and several arithemtic operations.
+    --
+
+    Addressing modes::
+    --
+    New indexed addressing modes are added for load and store instructions.
+    --
+
+    Load/store multiple::
+    --
+    Xqci adds instructions that load multiple sequential values from memory into multiple registers.
+    Analogous instructions for stores are also included.
+    --
+
+    Branch immediate instructions::
+    --
+    The base RISC-V ISA provides conditional branches that compare two register values.
+    Xqci adds conditional branch instructions that compare an immediate value to a register value,
+    reducing a common code sequence into a single instruction.
+    --
+
+    Conditional instructions::
+    --
+    Xqci includes a variety of conditional select instructions that pick one of two operand values based on the result of a condition
+    and conditional move instructions that either move a value or retain a value in a destination register based on the result of a condition.
+    Conditional select and conditional move instructions help reduce code size and avoid branches in common code sequences.
+    --
+
+    Extra bit manipulation instructions::
+    --
+    Xqci expands upon the standard `B` extension by adding instructions for
+    bit insertion/extraction, bit set/clear, sign and zero extension, and bit counting instructions.
+    --
+
+    Fast interrupt instructions::
+    --
+    Xqci adds instructions to accelerate interrupt handling, including instructions to quickly
+    enable/disable interrupts and instructions to automatically save an interrupt frame.
+    --
+
+    Saturating arithemtic::
+    --
+    Xqci adds saturating arithmetic instructions to improve performance of fixed-point calculations.
+    --
+
+    Xqci adds 16, 32, and 48-bit instruction encodings. The 16 and 32-bit encodings are allocated
+    in the custom opcode space so as not to conflict with standard RISC-V instructions. The 48-bit instructions
+    follow the guidance for 48-bit instructions in the RISC-V standard, but are not allocated in reserved custom
+    space since no such space has been defined by RISC-V International.
+
+  doc_license:
+    name: Creative Commons Attribution 4.0 International License
+    url: https://creativecommons.org/licenses/by/4.0/
+  company:
+    name: Qualcomm Technologies, Inc.
+    url: https://qualcomm.com
+
+  
