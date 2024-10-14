@@ -132,7 +132,8 @@ Copyright <%= ext_version["ratification_date"].nil? ? Date.today.year : ext_vers
 Contributors to version <%= version["version"] %> of the specification (in alphabetical order) include: +
 
 <%- version["contributors"].sort { |a, b| a["name"].split(" ").last <=> b["name"].split(" ").last }.each do |c| -%>
- * <%= c["name"] %> <<%= c["email"] %>> (<%= c["company"] %>)
+  * <%= c["name"] %> <<%= c["email"] %>> (<%= c["company"] %>)
+
 <%- end -%>
 <%- end -%>
 
@@ -419,8 +420,14 @@ RV64::
 Description::
 <%= i.description %>
 
+
 Decode Variables::
 
+<%- if i.multi_encoding? ? (i.decode_variables(32).empty? && i.decode_variables(64).empty?) : i.decode_variables(i.base.nil? ? 64 : i.base).empty? -%>
+
+<%= i.name %> has no decode variables.
+
+<%- else -%>
 <%- if i.multi_encoding? -%>
 RV32::
 +
@@ -446,7 +453,8 @@ RV64::
 <%= d.sext? ? 'signed ' : '' %>Bits<<%= d.size %>> <%= d.name %> = <%= d.extract %>;
 <%- end -%>
 ----
-<%- end -%>
+<%- end # if multi_encoding? -%>
+<%- end # if no decode variables-%>
 
 Operation::
 [source,idl,subs="specialchars,macros"]
