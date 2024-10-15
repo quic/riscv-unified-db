@@ -65,8 +65,8 @@ class Csr < ArchDefObject
 
     if has_custom_sw_read?
       ast = pruned_sw_read_ast(arch_def)
-      symtab = arch_def.sym_table.deep_clone
-      symtab.push
+      symtab = arch_def.symtab.deep_clone
+      symtab.push(ast)
       fns.concat(ast.reachable_functions(symtab))
     end
 
@@ -94,7 +94,7 @@ class Csr < ArchDefObject
     fns = []
 
     if has_custom_sw_read?
-      ast = sw_read_ast(arch_def.idl_compiler)
+      ast = sw_read_ast(arch_def)
       fns.concat(ast.reachable_functions_unevaluated(arch_def))
     end
 
@@ -415,8 +415,9 @@ class Csr < ArchDefObject
     ast = @type_checked_sw_read_asts[arch_def.name]
     return ast unless ast.nil?
 
-    symtab = arch_def.sym_table.deep_clone
-    symtab.push
+    symtab_hash = symtab.hash
+    symtab = symtab.global_clone
+    symtab.push(ast)
     # all CSR instructions are 32-bit
     symtab.add(
       "__instruction_encoding_size",
@@ -427,28 +428,33 @@ class Csr < ArchDefObject
       Idl::Type.new(:bits, width: 128)
      )
 
-    ast = sw_read_ast(arch_def.idl_compiler)
-    arch_def.idl_compiler.type_check(
+    ast = sw_read_ast(symtab)
+    symtab.archdef.idl_compiler.type_check(
       ast,
       symtab,
       "CSR[#{name}].sw_read()"
     )
-    @type_checked_sw_read_asts[arch_def.name] = ast
+    symtab.pop
+    symtab.release
+    @type_checked_sw_read_asts[symtab_hash] = ast
   end
 
   # @return [FunctionBodyAst] The abstract syntax tree of the sw_read() function
-  # @param idl_compiler [Idl::Compiler] A compiler
-  def sw_read_ast(idl_compiler)
+  # @param archdef [ArchDef] A configuration
+  def sw_read_ast(symtab)
+    raise ArgumentError, "Argument should be a symtab" unless symtab.is_a?(Idl::SymbolTable)
+
     return @sw_read_ast unless @sw_read_ast.nil?
     return nil if @data["sw_read()"].nil?
 
     # now, parse the function
-    @sw_read_ast = idl_compiler.compile_func_body(
+    @sw_read_ast = symtab.archdef.idl_compiler.compile_func_body(
       @data["sw_read()"],
       return_type: Idl::Type.new(:bits, width: 128), # big int to hold special return values
       name: "CSR[#{name}].sw_read()",
       input_file: __source,
       input_line: source_line("sw_read()"),
+      symtab:,
       type_check: false
     )
 
@@ -462,10 +468,10 @@ class Csr < ArchDefObject
     ast = @pruned_sw_read_asts[arch_def.name]
     return ast unless ast.nil?
 
-    ast = type_checked_sw_read_ast(arch_def).prune(arch_def.sym_table.deep_clone)
+    ast = type_checked_sw_read_ast(arch_def.symtab)
 
-    symtab = arch_def.sym_table.deep_clone
-    symtab.push
+    symtab = arch_def.symtab.global_clone
+    symtab.push(ast)
     # all CSR instructions are 32-bit
     symtab.add(
       "__instruction_encoding_size",
@@ -476,11 +482,18 @@ class Csr < ArchDefObject
       Idl::Type.new(:bits, width: 128)
     )
 
+    ast = ast.prune(symtab)
+    ast.freeze_tree(arch_def.symtab)
+
     arch_def.idl_compiler.type_check(
       ast,
       symtab,
       "CSR[#{name}].sw_read()"
     )
+
+    symtab.pop
+    symtab.release
+
     @pruned_sw_read_asts[arch_def.name] = ast
   end
 
