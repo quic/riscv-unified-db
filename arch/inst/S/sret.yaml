@@ -69,32 +69,32 @@ sret:
     if (implemented?(ExtensionName::H)) {
       if (CSR[mstatus].TSR == 1'b0 && CSR[hstatus].VTSR == 1'b0) {
         if (mode() == PrivilegeMode::U) {
-          raise (ExceptionCode::IllegalInstruction, $encoding);
+          raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
         } else if (mode() == PrivilegeMode::VU) {
-          raise (ExceptionCode::VirtualInstruction, $encoding);
+          raise (ExceptionCode::VirtualInstruction, mode(), $encoding);
         }
       } else if (CSR[mstatus].TSR == 1'b0 && CSR[hstatus].VTSR == 1'b1) {
         if (mode() == PrivilegeMode::U) {
-          raise (ExceptionCode::IllegalInstruction, $encoding);
+          raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
         } else if (mode() == PrivilegeMode::VU || mode() == PrivilegeMode::VS) {
-          raise (ExceptionCode::VirtualInstruction, $encoding);
+          raise (ExceptionCode::VirtualInstruction, mode(), $encoding);
         }
       } else if (CSR[mstatus].TSR == 1'b1 && CSR[hstatus].VTSR == 1'b0) {
         if (mode() == PrivilegeMode::U || mode() == PrivilegeMode::S) {
-          raise (ExceptionCode::IllegalInstruction, $encoding);
+          raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
         } else if (mode() == PrivilegeMode::VU) {
-          raise (ExceptionCode::VirtualInstruction, $encoding);
+          raise (ExceptionCode::VirtualInstruction, mode(), $encoding);
         }
       } else if (CSR[mstatus].TSR == 1'b1 && CSR[hstatus].VTSR == 1'b1) {
         if (mode() == PrivilegeMode::U || mode() == PrivilegeMode::S) {
-          raise (ExceptionCode::IllegalInstruction, $encoding);
+          raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
         } else if (mode() == PrivilegeMode::VU || mode() == PrivilegeMode::VS) {
-          raise (ExceptionCode::VirtualInstruction, $encoding);
+          raise (ExceptionCode::VirtualInstruction, mode(), $encoding);
         }      
       }
     } else {
       if (mode() != PrivilegeMode::U) {
-        raise (ExceptionCode::IllegalInstruction, $encoding);
+        raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
       }
     }
 
@@ -113,13 +113,35 @@ sret:
       CSR[mstatus].SIE = CSR[mstatus].SPIE;
       CSR[mstatus].SPIE = 1;
       CSR[mstatus].SPP = 2'b00;
-      PC = $bits(CSR[sepc]);
+      $pc = $bits(CSR[sepc]);
     } else {
       if (CSR[mstatus].TSR == 1'b1) {
-        raise (ExceptionCode::IllegalInstruction, $encoding);
+        raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
       }
       CSR[vsstatus].SPP = 0;
       CSR[vsstatus].SIE = CSR[vsstatus].SPIE;
       CSR[vsstatus].SPIE = 1;
-      PC = $bits(CSR[vsepc]);
+      $pc = $bits(CSR[vsepc]);
     }
+
+
+  sail(): |
+    {
+      let sret_illegal : bool = match cur_privilege {
+        User       => true,
+        Supervisor => not(haveSupMode ()) | mstatus.TSR() == 0b1,
+        Machine    => not(haveSupMode ())
+      };
+      if   sret_illegal
+      then { handle_illegal(); RETIRE_FAIL }
+      else if not(ext_check_xret_priv (Supervisor))
+      then { ext_fail_xret_priv(); RETIRE_FAIL }
+      else {
+        set_next_pc(exception_handler(cur_privilege, CTL_SRET(), PC));
+        RETIRE_SUCCESS
+      }
+    }
+  
+  
+
+

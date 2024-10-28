@@ -6,8 +6,9 @@ qc.selectinei:
     Move `rs2` to `rd` if the value in `rd` is not equal to value `imm`,
     move `simm2` to `rd` otherwise
   definedBy:
-  - Xqci
-  - Xqcics
+    anyOf:
+    - Xqci
+    - Xqcics
   base: 32
   encoding:
     match:     -----11----------011-----1011011

@@ -4,7 +4,8 @@ clmulh:
   long_name: Carry-less multiply (high-part)
   description: |
     `clmulh` produces the upper half of the 2*XLEN carry-less product
-  definedBy: [B, Zbc]
+  definedBy:
+    anyOf: [B, Zbc]
   assembly: xd, xs1, xs2
   encoding:
     match: 0000101----------011-----0110011
@@ -20,9 +21,10 @@ clmulh:
     u: always
     vs: always
     vu: always
+  data_independent_timing: true
   operation(): |
     if (implemented?(ExtensionName::B) && (CSR[misa].B == 1'b0)) {
-      raise (ExceptionCode::IllegalInstruction, $encoding);
+      raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
     }
 
     XReg rs1_val = X[rs1];
@@ -36,3 +38,20 @@ clmulh:
     }
 
     X[rd] = output;
+
+
+
+  sail(): |
+    {
+      let rs1_val = X(rs1);
+      let rs2_val = X(rs2);
+      result : xlenbits = zeros();
+      foreach (i from 0 to (xlen_val - 1))
+        if rs2_val[i] == bitone then result = result ^ (rs1_val >> (xlen_val - i));
+      X(rd) = result;
+      RETIRE_SUCCESS
+    }
+  
+  
+
+

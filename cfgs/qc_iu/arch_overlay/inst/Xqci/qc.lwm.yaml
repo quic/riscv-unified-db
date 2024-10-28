@@ -6,8 +6,9 @@ qc.lwm:
     Loads multiple words starting from address (`rs1` + `imm`) to registers, starting from `rd`.
     The number of words is in `rs2`
   definedBy:
-  - Xqci
-  - Xqcilsm
+    anyOf:
+    - Xqci
+    - Xqcilsm
   base: 32
   encoding:
     match:     00---------------111-----0001011
@@ -32,8 +33,8 @@ qc.lwm:
   operation(): |
     XReg vaddr = X[rs1] + imm;
     XReg num_words = X[rs2];
-    raise (ExceptionCode::IllegalInstruction, $encoding) if ((rd + num_words) > 32);
+    raise (ExceptionCode::IllegalInstruction, effective_ldst_mode(), $encoding) if ((rd + num_words) > 32);
     for (U32 i = 0; i < num_words; i++) {
-      X[rd + i] = read_memory<32>(vaddr);
+      X[rd + i] = read_memory<32>(vaddr, $encoding);
       vaddr = vaddr + 4;
     }

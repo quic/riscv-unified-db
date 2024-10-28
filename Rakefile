@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
+require "etc"
+
 $root = Pathname.new(__FILE__).dirname.realpath
 $lib = $root / "lib"
 
+require "ruby-progressbar"
 require "yard"
 require "minitest/test_task"
 
@@ -28,7 +31,8 @@ namespace :gen do
   desc "Generate documentation for the ruby tooling"
   task tool_doc: "#{$root}/.stamps/dev_gems" do
     Dir.chdir($root) do
-      sh "bundle exec yard doc"
+      sh "bundle exec yard doc --yardopts arch_def.yardopts"
+      sh "bundle exec yard doc --yardopts idl.yardopts"
     end
   end
 end
@@ -61,14 +65,45 @@ task :clean do
   FileUtils.rm_rf $root / ".stamps"
 end
 
-desc "Validate the arch docs"
-task validate: "gen:arch" do
-  validator = Validator.instance
-  Dir.glob("#{$root}/arch/**/*.yaml") do |f|
-    validator.validate(f)
+namespace :validate do
+  task :insts do
+    puts "Checking instruction encodings..."
+    inst_paths = Dir.glob("#{$root}/arch/inst/**/*.yaml").map { |f| Pathname.new(f) }
+    inst_paths.each do |inst_path|
+      Validator.instance.validate_instruction(inst_path)
+    end
+    puts "All instruction encodings pass basic sanity tests"
   end
-  puts "All files validate against their schema"
+  task schema: "gen:arch" do
+    validator = Validator.instance
+    puts "Checking arch files against schema.."
+    arch_files = Dir.glob("#{$root}/arch/**/*.yaml")
+    progressbar = ProgressBar.create(total: arch_files.size)
+    arch_files.each do |f|
+      progressbar.increment
+      validator.validate(f)
+    end
+    puts "All files validate against their schema"  
+  end
+  task idl: ["gen:arch", "#{$root}/.stamps/arch-gen-_32.stamp", "#{$root}/.stamps/arch-gen-_64.stamp"]  do
+    print "Parsing IDL code for RV32..."
+    arch_def_32 = arch_def_for("_32")
+    puts "done"
+
+    arch_def_32.type_check
+
+    print "Parsing IDL code for RV64..."
+    arch_def_64 = arch_def_for("_64")
+    puts "done"
+
+    arch_def_64.type_check
+
+    puts "All IDL passed type checking"
+  end
 end
+
+desc "Validate the arch docs"
+task validate: ["validate:schema", "validate:idl", "validate:insts"]
 
 def insert_warning(str, from)
   # insert a warning on the second line
@@ -76,6 +111,7 @@ def insert_warning(str, from)
   first_line = lines.shift
   lines.unshift(first_line, "\n# WARNING: This file is auto-generated from #{Pathname.new(from).relative_path_from($root)}\n\n").join("")
 end
+private :insert_warning
 
 (3..31).each do |hpm_num|
   file "#{$root}/arch/csr/Zihpm/mhpmcounter#{hpm_num}.yaml" => [
@@ -224,4 +260,24 @@ namespace :gen do
       Rake::Task["#{$root}/arch/csr/I/pmpcfg#{pmpcfg_num}.yaml"].invoke
     end
   end
+end
+
+desc <<~DESC
+  Run the regression tests
+
+  These tests must pass before a commit will be allowed in the main branch on GitHub
+DESC
+task :regress do
+  Rake::Task["idl_test"].invoke
+  Rake::Task["validate"].invoke
+  ENV["MANUAL_NAME"] = "isa"
+  ENV["VERSIONS"] = "all"
+  Rake::Task["gen:html_manual"].invoke
+  Rake::Task["gen:html"].invoke("generic_rv64")
+  Rake::Task["gen:crd_pdf"].invoke("MockCRD-1")
+  Rake::Task["gen:crd_pdf"].invoke("MC-1")
+  Rake::Task["gen:profile_pdf"].invoke("rva")
+
+  puts
+  puts "Regression test PASSED"
 end

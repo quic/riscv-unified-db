@@ -9,8 +9,9 @@ qc.cto:
     bit of the input is a 0, the output is 0.
     Output written to `rd`
   definedBy:
-  - Xqci
-  - Xqcibm
+    anyOf:
+    - Xqci
+    - Xqcibm
   base: 32
   encoding:
     match:     000010100000-----011-----0001011

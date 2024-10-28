@@ -7,8 +7,9 @@ qc.lrh:
     address formed by adding `rs1` to `rs2`, shifted by `shamt`.
     Sign extend the result.
   definedBy:
-  - Xqci
-  - Xqcisls
+    anyOf:
+    - Xqci
+    - Xqcisls
   assembly: " xd, xs1, xs2, shamt"
   base: 32
   encoding:
@@ -30,4 +31,4 @@ qc.lrh:
     vu: always
   operation(): |
     XReg virtual_address = X[rs1] + (X[rs2] << shamt);
-    X[rd] = sext(read_memory<16>(virtual_address), 16);
+    X[rd] = sext(read_memory<16>(virtual_address, $encoding), 16);

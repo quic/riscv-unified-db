@@ -3,11 +3,12 @@
 qc.e.addi:
   long_name: Add immediate
   description: |
-    Add a sign-extended 26-bit immediate `imm` to the value in `rs1`, 
+    Add a sign-extended 26-bit immediate `imm` to the value in `rs1`,
     and store the result in `rd`.
   definedBy:
-  - Xqci
-  - Xqcilia
+    anyOf:
+    - Xqci
+    - Xqcilia
   base: 32
   encoding:
     match:     ----------------10---------------011-----0011111

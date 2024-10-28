@@ -5,8 +5,9 @@ qc.c.setint:
   description: |
     Set interrupt, interrupt number is in `rs1`.
   definedBy:
-  - Xqci
-  - Xqciint
+    anyOf:
+    - Xqci
+    - Xqciint
   assembly: " xs1"
   base: 32
   encoding:
@@ -21,7 +22,9 @@ qc.c.setint:
     vs: always
     vu: always
   operation(): |
+    Bits<12> MCLICIP0_ADDR = CSR[qc_mclicip0].address();
+
     XReg idx = rs1 / 32;
     XReg bit = rs1 % 32;
-    XReg pre_csr = CSR[mclicip0 + idx].sw_read();
-    CSR[mclicip0 + idx].sw_write(pre_csr | (1 << bit));
+    XReg pre_csr = CSR[MCLICIP0_ADDR + idx].sw_read();
+    CSR[MCLICIP0_ADDR + idx].sw_write(pre_csr | (1 << bit));

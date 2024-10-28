@@ -3,13 +3,14 @@
 qc.norm:
   long_name: Signed Normalization
   description: |
-    Signed normalization of `rs1`. 
+    Signed normalization of `rs1`.
     Exponent written in bits[7:0] of the result.
     Mantissa written in bits[31:8] of the result.
-    Write result to `rd`. 
+    Write result to `rd`.
   definedBy:
-  - Xqci
-  - Xqcia
+    anyOf:
+    - Xqci
+    - Xqcia
   base: 32
   encoding:
     match:     000011100000-----011-----0001011
@@ -32,4 +33,3 @@ qc.norm:
     XReg exp = (X[rs1][31] == 1) ? (X[rs1] << (clo - 1)) : (X[rs1] << (clz - 1));
     XReg mnt = (X[rs1][31] == 1) ? (-(clo - 1)) : (-(clz - 1));
     X[rd] = {mnt[23:0],exp[7:0]};
-    

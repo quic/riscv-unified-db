@@ -5,8 +5,9 @@ qc.setinti:
   description: |
     Set interrupt, interrupt number is in `imm` (0 - 1023).
   definedBy:
-  - Xqci
-  - Xqciint
+    anyOf:
+    - Xqci
+    - Xqciint
   assembly: " imm"
   base: 32
   encoding:
@@ -20,7 +21,7 @@ qc.setinti:
     vs: always
     vu: always
   operation(): |
-    Bits<12> MCLICIP0_ADDR = CSR[mclicip0].address();
+    Bits<12> MCLICIP0_ADDR = CSR[qc_mclicip0].address();
 
     XReg idx = imm / 32;
     XReg bit = imm % 32;

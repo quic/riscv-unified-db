@@ -3,7 +3,7 @@ mret:
   description: |
     Returns from an exception in M-mode.
   assembly: ""
-  definedBy: I
+  definedBy: Sm
   access:
     s: never
     u: never
@@ -25,4 +25,22 @@ mret:
       set_mode(PrivilegeMode::M);
     }
     CSR[mstatus].MPP = implemented?(ExtensionName::U) ? 2'b00 : 2'b11;
-    PC = $bits(CSR[mepc]);
+    $pc = $bits(CSR[mepc]);
+
+
+
+  sail(): |
+    {
+      if   cur_privilege != Machine
+      then { handle_illegal(); RETIRE_FAIL }
+      else if not(ext_check_xret_priv (Machine))
+      then { ext_fail_xret_priv(); RETIRE_FAIL }
+      else {
+        set_next_pc(exception_handler(cur_privilege, CTL_MRET(), PC));
+        RETIRE_SUCCESS
+      }
+    }
+  
+  
+
+

@@ -10,6 +10,7 @@ module Idl
       :enum,     # enumeration class
       :enum_ref, # reference to an enumeration element, convertable to int and/or Bits<bit_width(MAX_ENUM_VALUE)>
       :bitfield, # bitfield, convertable to int and/or Bits<width>
+      :struct,   # structure class
       :array,    # array of other types
       :tuple,    # tuple of other disimilar types
       :function, # function
@@ -31,12 +32,22 @@ module Idl
 
     def default
       case @kind
-      when :bits, :enum_ref, :bitfield
+      when :bits, :bitfield
         0
       when :boolean
         false
       when :array
-        Array.new(@width, sub_type.default)
+        if @width == :unknown
+          Array.new
+        else
+          Array.new(@width, sub_type.default)
+        end
+      when :string
+        ""
+      when :enum_ref
+        @enum_class.element_values.min
+      when :enum
+        raise "?"
       else
         raise "No default for #{@kind}"
       end
@@ -74,7 +85,7 @@ module Idl
 
       raise "Should be a FunctionType" if kind == :function && !self.is_a?(FunctionType)
 
-      raise "Width must be an Integer, is a #{width.class}" unless width.nil? || width.is_a?(Integer)
+      raise "Width must be an Integer, is a #{width.class}" unless width.nil? || width.is_a?(Integer) || width == :unknown
       @width = width
       @sub_type = sub_type
       raise "Tuples need a type list" if kind == :tuple && tuple_types.nil?
@@ -85,7 +96,7 @@ module Idl
       @name = name
       if kind == :bits
         raise "Bits type must have width" unless @width
-        raise "Bits type must have positive width" unless @width.positive?
+        raise "Bits type must have positive width" unless @width == :unknown || @width.positive?
       end
       if kind == :enum
         raise "Enum type must have width" unless @width
@@ -102,6 +113,7 @@ module Idl
         @width = width
       end
     end
+    TYPE_FROM_KIND = [:boolean, :void, :dontcare].map { |k| [k, Type.new(k)] }.to_h.freeze
 
     def clone
       Type.new(
@@ -156,20 +168,24 @@ module Idl
       if type.is_a?(Symbol)
         raise "#{type} is not a kind" unless KINDS.include?(type)
 
-        type = Type.new(type)
+        type = TYPE_FROM_KIND[type]
       end
 
       case @kind
       when :boolean
-        return type.kind == :boolean
+        type.kind == :boolean
       when :enum_ref
-        return type.kind == :enum_ref && type.name == @enum_class.name
+        type.kind == :enum_ref && type.name == @enum_class.name
       when :dontcare
-        return true
+        true
       when :bits
-        return type.kind == :bits && type.width == @width
+        type.kind == :bits && type.width == @width
       when :string
-        return type.kind == :string && type.width == @width
+        type.kind == :string && type.width == @width
+      when :array
+        type.kind == :array && type.sub_type.equal_to?(@sub_type)
+      when :struct
+        type.kind == :struct && (type.type_name == type_name)
       else
         raise "unimplemented type '#{@kind}'"
       end
@@ -190,7 +206,7 @@ module Idl
       if type.is_a?(Symbol)
         raise "#{type} is not a kind" unless KINDS.include?(type)
 
-        type = Type.new(type)
+        type = TYPE_FROM_KIND[type]
       end
 
       case @kind
@@ -208,7 +224,8 @@ module Idl
         return @return_type.convertable_to?(type)
       when :enum
         if type.kind == :bits
-          return width <= type.width
+          return false
+          # return (type.width == :unknown) || (width <= type.width)
         elsif type.kind == :enum
           return type.enum_class == enum_class
         else
@@ -243,6 +260,8 @@ module Idl
         return type.kind == :string
       when :void
         return false
+      when :struct
+        return type.kind == :struct && (type.type_name == type_name)
       else
         raise "unimplemented type '#{@kind}'"
       end
@@ -272,6 +291,8 @@ module Idl
           "void"
         elsif @kind == :string
           "string"
+        elsif @kind == :struct
+          "struct #{type_name}"
         else
           raise @kind.to_s
         end
@@ -280,7 +301,9 @@ module Idl
 
     def to_cxx_no_qualifiers
         if @kind == :bits
+          raise "@width is unknown" if @width == :unknown
           raise "@width is a #{@width.class}" unless @width.is_a?(Integer)
+
           if signed?
             "SignedBits<#{@width.is_a?(Integer) ? @width : @width.to_cxx}>"
           else
@@ -366,27 +389,168 @@ module Idl
       @qualifiers.append(:global).uniq!
       self
     end
+
+    # @return [Idl::Type] Type of a scalar
+    # @param schema [Hash] JSON Schema desciption of a scalar
+    def self.from_json_schema_scalar_type(schema)
+      if schema.key?("type")
+        case schema["type"]
+        when "boolean"
+          Type.new(:boolean)
+        when "integer"
+          if schema.key?("enum")
+            Type.new(:bits, width: schema["enum"].max.bit_length)
+          elsif schema.key?("maximum")
+            Type.new(:bits, width: schema["maximum"].bit_length)
+          else
+            Type.new(:bits, width: 128)
+          end
+        when "string"
+          if schema.key?("enum")
+            Type.new(:string, width: schema["enum"].map(&:length).max)
+          else
+            Type.new(:string, width: 4096)
+          end
+        else
+          raise "Unhandled JSON schema type"
+        end
+      elsif schema.key?("const")
+        case schema["const"]
+        when TrueClass, FalseClass
+          Type.new(:boolean)
+        when Integer
+          Type.new(:bits, width: schema["const"].bit_length)
+        when String
+          Type.new(:string, width: schema["const"].length)
+        else
+          raise "Unhandled const type"
+        end
+      else
+        raise "unhandled scalar schema"
+      end
+    end
+    private_class_method :from_json_schema_scalar_type
+
+    # @return [Idl::Type] Type of array
+    # @param schema [Hash] JSON Schema desciption of an array
+    def self.from_json_schema_array_type(schema)
+      width = schema["minItems"]
+      if !schema.key?("minItems") || !schema.key?("maxItems") || (schema["minItems"] != schema["maxItems"])
+        width = :unknown
+      end
+
+      if schema["items"].is_a?(Hash)
+        case schema["items"]["type"]
+        when "boolean", "integer", "string"
+          Type.new(:array, width:, sub_type: from_json_schema_scalar_type(schema["items"]))
+        when "array"
+          Type.new(:array, width:, sub_type: from_json_schema_array_type(schema["items"]))
+        end
+      elsif schema["items"].is_a?(Array)
+        # this ia an array with each element specified
+        sub_type = nil
+        schema["items"].each do |item_schema|
+          if sub_type.nil?
+            sub_type = from_json_schema_scalar_type(item_schema)
+          else
+            unless sub_type.equal_to?(from_json_schema_scalar_type(item_schema))
+              raise "Schema error: Array elements must be the same type (#{sub_type} #{from_json_schema_scalar_type(item_schema)}) \n#{schema["items"]}"
+            end
+          end
+        end
+        if schema.key?("additionalItems")
+          if sub_type.nil?
+            sub_type = from_json_schema_scalar_type(schema["additionalItems"])
+          else
+            unless sub_type.equal_to?(from_json_schema_scalar_type(schema["additionalItems"]))
+              raise "Schema error: Array elements must be the same type"
+            end
+          end
+        end
+        Type.new(:array, width:, sub_type:)
+      end
+    end
+    private_class_method :from_json_schema_array_type
+
+    # @returns [Idl::Type] Type described by JSON +schema+
+    def self.from_json_schema(schema)
+      hsh = schema.to_h
+      case hsh["type"]
+      when "boolean", "integer", "string"
+        from_json_schema_scalar_type(hsh)
+      when "array"
+        from_json_schema_array_type(hsh)
+      end
+    end
+  end
+
+  class StructType < Type
+    attr_reader :type_name
+
+    def initialize(type_name, member_types, member_names)
+      raise ArgumentError, "Argument 1 should be a type name" unless type_name.is_a?(String)
+
+      raise ArgumentError, "Argument 2 should be an array of types" unless member_types.is_a?(Array)
+
+      raise ArgumentError, "Argument 3 should be an array of names" unless member_names.is_a?(Array) && member_names.all? { |m| m.is_a?(String) }
+
+      raise ArgumentError, "member_types and member_names must be the same size" unless member_names.size == member_types.size
+
+      super(:struct)
+      @type_name = type_name
+      @member_types = member_types
+      @member_names = member_names
+    end
+
+    def clone
+      StructType.new(@type_name, @member_types, @member_names)
+    end
+
+    def default
+      hsh = {}
+      @member_types.size.times do |i|
+        hsh[@member_names[i]] = @member_types[i].default
+      end
+      hsh
+    end
+
+    def member?(name) = @member_names.include?(name)
+
+    def member_type(member_name)
+      idx = @member_names.index(member_name)
+      raise "No member named '#{member_name}'" if idx.nil?
+
+      @member_types[idx]
+    end
   end
 
   class EnumerationType < Type
-    attr_reader :element_names, :element_values, :width, :ref_type
+    # @return [Integer] The bit width of the enumeration elements
+    attr_reader :width
 
+    # @return [Array<String>] The names of the enumeration elements, in the same order as element_values
+    attr_reader :element_names
+
+    # @return [Array<Integer>] The values of the enumeration elements, in the same order as element_names
+    attr_reader :element_values
+
+    # @return [Type] The type of an reference to this Enumeration class
+    attr_reader :ref_type
+
+    # @param type_name [String] The name of the enum class
+    # @param element_names [Array<String>] The names of the elements, in the same order as +element_values+
+    # @param element_values [Array<Integer>] The values of the elements, in the same order as +element_names+
     def initialize(type_name, element_names, element_values)
       width = element_values.max.bit_length
       width = 1 if width.zero? # can happen if only enum member has value 0
-      super(:enum, width: width)
+      super(:enum, width:)
 
       @name = type_name
       @element_names = element_names
       @element_values = element_values
       raise "unexpected" unless element_names.is_a?(Array)
 
-      # now add the constant values at the same scope
-      # ...or, enum values are only usable in specific contexts?
-  #    element_names.each_index do |idx|
-  #      syms.add!(element_names[idx], Var.new(element_names[idx], self, element_values[idx]))
-  #    end
-       @ref_type = Type.new(:enum_ref, enum_class: self)
+      @ref_type = Type.new(:enum_ref, enum_class: self)
     end
 
     def clone
@@ -473,20 +637,27 @@ module Idl
 
     def num_args = @func_def_ast.num_args
 
-    def type_check_call(template_values, func_call_ast)
+    def type_check_call(template_values, argument_nodes, call_site_symtab, func_call_ast)
       raise "Missing template values" if templated? && template_values.empty?
 
       if templated?
         symtab = apply_template_values(template_values, func_call_ast)
+        apply_arguments(symtab, argument_nodes, call_site_symtab, func_call_ast)
 
         @func_def_ast.type_check_template_instance(symtab)
-      else
-        symtab = @symtab.deep_clone
-        symtab.pop while symtab.levels != 1
 
-        symtab.push # to keep things consistent with template functions, push a scope
+        symtab.pop
+        symtab.release
+      else
+        symtab = @symtab.global_clone
+
+        symtab.push(func_call_ast) # to keep things consistent with template functions, push a scope
+
+        apply_arguments(symtab, argument_nodes, call_site_symtab, func_call_ast)
 
         @func_def_ast.type_check_from_call(symtab)
+        symtab.pop
+        symtab.release
       end
     end
 
@@ -496,20 +667,19 @@ module Idl
 
     def templated? = @func_def_ast.templated?
 
-    def apply_template_values(template_values = [], func_call_ast)
+    def apply_template_values(template_values, func_call_ast)
       func_call_ast.type_error "Missing template values" if templated? && template_values.empty?
 
       func_call_ast.type_error "wrong number of template values in call to #{name}" unless template_names.size == template_values.size
 
-      symtab = @symtab.deep_clone
-      symtab.pop while symtab.levels != 1
+      symtab = @symtab.global_clone
 
       func_call_ast.type_error "Symbol table should be at global scope" unless symtab.levels == 1
 
-      symtab.push
+      symtab.push(func_call_ast)
 
       template_values.each_with_index do |value, idx|
-        func_call_ast.type_error "template value should be an Integer" unless value.is_a?(Integer)
+        func_call_ast.type_error "template value should be an Integer (found #{value.class.name})" unless value == :unknown || value.is_a?(Integer)
 
         symtab.add!(template_names[idx], Var.new(template_names[idx], template_types(symtab)[idx], value, template_index: idx, function_name: @func_def_ast.name))
       end
@@ -522,10 +692,11 @@ module Idl
       idx = 0
       @func_def_ast.arguments(symtab).each do |atype, aname|
         func_call_ast.type_error "Missing argument #{idx}" if idx >= argument_nodes.size
-        begin
-          symtab.add!(aname, Var.new(aname, atype, argument_nodes[idx].value(call_site_symtab)))
-        rescue AstNode::ValueError => e
-          symtab.add!(aname, Var.new(aname, atype))
+        value_result = Idl::AstNode.value_try do
+          symtab.add(aname, Var.new(aname, atype, argument_nodes[idx].value(call_site_symtab)))
+        end
+        Idl::AstNode.value_else(value_result) do
+          symtab.add(aname, Var.new(aname, atype))
         end
         idx += 1
       end
@@ -538,9 +709,10 @@ module Idl
       values = []
       @func_def_ast.arguments(symtab).each do |atype, aname|
         func_call_ast.type_error "Missing argument #{idx}" if idx >= argument_nodes.size
-        begin
+        value_result = Idl::AstNode.value_try do
           values << argument_nodes[idx].value(call_site_symtab)
-        rescue AstNode::ValueError => e
+        end
+        Idl::AstNode.value_else(value_result) do
           return nil
         end
         idx += 1
@@ -555,14 +727,26 @@ module Idl
       symtab = apply_template_values(template_values, func_call_ast)
       # apply_arguments(symtab, argument_nodes, call_site_symtab)
 
-      @func_def_ast.return_type(symtab).clone
+      begin
+        type = @func_def_ast.return_type(symtab)
+      ensure
+        symtab.pop
+        symtab.release
+      end
+      type
     end
 
     def return_value(template_values, argument_nodes, call_site_symtab, func_call_ast)
       symtab = apply_template_values(template_values, func_call_ast)
       apply_arguments(symtab, argument_nodes, call_site_symtab, func_call_ast)
 
-      @func_def_ast.body.return_value(symtab)
+      begin
+        value = @func_def_ast.body.return_value(symtab)
+      ensure
+        symtab.pop
+        symtab.release
+      end
+      value
     end
 
     # @param template_values [Array<Integer>] Template values to apply, required if {#templated?}
@@ -571,17 +755,28 @@ module Idl
       symtab = apply_template_values(template_values, func_call_ast)
       apply_arguments(symtab, argument_nodes, call_site_symtab, func_call_ast)
 
-      @func_def_ast.return_types(symtab).map(&:clone)
+      begin
+        types = @func_def_ast.return_types(symtab)
+      ensure
+        symtab.pop
+        symtab.release
+      end
+      types
     end
 
     def argument_type(index, template_values, argument_nodes, call_site_symtab, func_call_ast)
       return nil if index >= @func_def_ast.num_args
 
       symtab = apply_template_values(template_values, func_call_ast)
-      apply_arguments(symtab, argument_nodes, call_site_symtab, func_call_ast)
+      # apply_arguments(symtab, argument_nodes, call_site_symtab, func_call_ast)
 
-      arguments = @func_def_ast.arguments(symtab)
-      arguments[index][0].clone
+      begin
+        arguments = @func_def_ast.arguments(symtab)
+      ensure
+        symtab.pop
+        symtab.release
+      end
+      arguments[index][0]
     end
 
     def argument_name(index, template_values = [], func_call_ast)
@@ -590,7 +785,12 @@ module Idl
       symtab = apply_template_values(template_values, func_call_ast)
       # apply_arguments(symtab, argument_nodes, call_site_symtab)
 
-      arguments = @func_def_ast.arguments(symtab)
+      begin
+        arguments = @func_def_ast.arguments(symtab)
+      ensure
+        symtab.pop
+        symtab.relase
+      end
       arguments[index][1]
     end
 

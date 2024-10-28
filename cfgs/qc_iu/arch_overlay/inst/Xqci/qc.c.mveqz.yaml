@@ -5,8 +5,9 @@ qc.c.mveqz:
   description: |
     Move `rs1` to `rd` if `rd` == 0, keep `rd` value otherwise
   definedBy:
-  - Xqci
-  - Xqcicm
+    anyOf:
+    - Xqci
+    - Xqcicm
   base: 32
   encoding:
     match:     101011---00---10

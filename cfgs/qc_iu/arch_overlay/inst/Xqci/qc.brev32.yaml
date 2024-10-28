@@ -5,8 +5,9 @@ qc.brev32:
   description: |
     Reverses the bit order of `rs1` and writes the result to `rd`
   definedBy:
-  - Xqci
-  - Xqcibm
+    anyOf:
+    - Xqci
+    - Xqcibm
   base: 32
   encoding:
     match:     000011000000-----011-----0001011

@@ -5,8 +5,9 @@ qc.beqi:
   description: |
     Branches to `PC` + `offset` if the value in `rs1` is equal to the signed immediate
   definedBy:
-  - Xqci
-  - Xqcibi
+    anyOf:
+    - Xqci
+    - Xqcibi
   base: 32
   encoding:
     match:     -----------------000-----1111011
@@ -29,5 +30,5 @@ qc.beqi:
     vu: always
   operation(): |
     if ($signed(X[rs1]) == $signed(imm)) {
-      jump_halfword(PC + $signed(offset));
+      jump_halfword($pc + $signed(offset));
     }

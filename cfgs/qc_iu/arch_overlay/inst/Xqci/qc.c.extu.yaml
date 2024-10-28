@@ -6,8 +6,9 @@ qc.c.extu:
     Extract a subset of bits from `rd` starting from LSB.
     The width of the subset is determined by (`width_minus1`[4:0] + 1) (1..32).
   definedBy:
-  - Xqci
-  - Xqcibm
+    anyOf:
+    - Xqci
+    - Xqcibm
   assembly: " xd, width"
   base: 32
   encoding:

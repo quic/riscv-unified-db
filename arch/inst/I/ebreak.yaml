@@ -25,4 +25,20 @@ ebreak:
     vs: always
     vu: always
   operation(): |
-    raise (ExceptionCode::Breakpoint, $pc);
+    if (TRAP_ON_EBREAK) {
+      raise_precise(ExceptionCode::Breakpoint, mode(), $pc);
+    } else {
+      eei_ebreak();
+    }
+
+
+
+  sail(): |
+    {
+      handle_mem_exception(PC, E_Breakpoint());
+      RETIRE_FAIL
+    }
+  
+  
+
+

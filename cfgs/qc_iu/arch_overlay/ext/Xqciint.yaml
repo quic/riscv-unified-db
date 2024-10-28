@@ -4,7 +4,7 @@ Xqciint:
   type: unprivileged
   long_name: Qualcomm interrupt prologue/epilogue
   versions:
-  - version: 0.1
+  - version: "0.1.0"
     state: development
     ratification_date: null
     contributors:

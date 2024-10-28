@@ -6,8 +6,9 @@ qc.setwmi:
     Stores the value of `rs3` multiple times into the address starting at (`rs1` + `imm`).
     The number of writes is in length.
   definedBy:
-  - Xqci
-  - Xqcilsm
+    anyOf:
+    - Xqci
+    - Xqcilsm
   base: 32
   encoding:
     match:     11---------------111-----0101011
@@ -32,6 +33,6 @@ qc.setwmi:
     XReg vaddr = X[rs1] + imm;
     Bits<32> write_value = X[rs3][31:0];
     for (U32 i = 0; i < length; i++) {
-      write_memory<32>(vaddr, write_value);
+      write_memory<32>(vaddr, write_value, $encoding);
       vaddr = vaddr + 4;
     }

@@ -5,8 +5,10 @@ qc.shladd:
   description: |
     Left shift _rs1_ by _shamt_ and add the value in _rs2_.
   definedBy:
-  - [Xqci, ">= 0.2"]
-  - Xqciac
+    anyOf:
+    - name: Xqci
+      version: ">= 0.2"
+    - Xqciac
   base: 32
   encoding:
     match:     01---------------011-----0001011

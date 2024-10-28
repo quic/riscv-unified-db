@@ -16,7 +16,8 @@ cpopw:
     function `__builtin_popcountl (unsigned long x)` for LP64 is
     implemented by cpop on RV64.
     ----
-  definedBy: [B, Zbb]
+  definedBy:
+    anyOf: [B, Zbb]
   base: 64
   assembly: xd, xs1
   encoding:
@@ -33,7 +34,7 @@ cpopw:
     vu: always
   operation(): |
     if (implemented?(ExtensionName::B) && (CSR[misa].B == 1'b0)) {
-      raise (ExceptionCode::IllegalInstruction, $encoding);
+      raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
     }
 
     XReg bitcount = 0;
@@ -46,3 +47,19 @@ cpopw:
     }
 
     X[rd] = bitcount;
+
+
+
+  sail(): |
+    {
+      let rs1_val = X(rs1);
+      result : nat = 0;
+      foreach (i from 0 to 31)
+        if rs1_val[i] == bitone then result = result + 1;
+      X(rd) = to_bits(sizeof(xlen), result);
+      RETIRE_SUCCESS
+    }
+  
+  
+
+

@@ -5,8 +5,9 @@ qc.e.addai:
   description: |
     Add a 32-bit immediate `imm` to the value in `rd`, and store the result back in `rd`.
   definedBy:
-  - Xqci
-  - Xqcilia
+    anyOf:
+    - Xqci
+    - Xqcilia
   base: 32
   encoding:
     match:     --------------------------------0010-----0011111

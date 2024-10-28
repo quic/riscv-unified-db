@@ -4,7 +4,7 @@ Xqcilb:
   type: unprivileged
   long_name: Qualcomm long branch
   versions:
-  - version: 0.1
+  - version: "0.1.0"
     state: development
     ratification_date: null
     contributors:

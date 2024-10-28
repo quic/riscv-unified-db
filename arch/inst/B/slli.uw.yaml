@@ -8,7 +8,8 @@ slli.uw:
 
     [NOTE]
     This instruction is the same as `slli` with `zext.w` performed on rs1 before shifting.
-  definedBy: [B, Zba]
+  definedBy:
+    anyOf: [B, Zba]
   base: 64
   encoding:
     match: 0000010----------001-----0011011
@@ -27,7 +28,21 @@ slli.uw:
     vu: always
   operation(): |
     if (implemented?(ExtensionName::B) && (CSR[misa].B == 1'b0)) {
-      raise (ExceptionCode::IllegalInstruction, $encoding);
+      raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
     }
 
     X[rd] = X[rs1][31:0] << shamt;
+
+
+
+  sail(): |
+    {
+      let rs1_val = X(rs1);
+      let result : xlenbits = zero_extend(rs1_val[31..0]) << shamt;
+      X(rd) = result;
+      RETIRE_SUCCESS
+    }
+  
+  
+
+

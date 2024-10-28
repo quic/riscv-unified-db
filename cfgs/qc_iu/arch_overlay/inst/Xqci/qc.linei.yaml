@@ -5,8 +5,9 @@ qc.linei:
   description: |
     Move `simm` to `rd` if the value in `rs1` is not equal to value `imm`
   definedBy:
-  - Xqci
-  - Xqcicli
+    anyOf:
+    - Xqci
+    - Xqcicli
   base: 32
   encoding:
     match:     -----11----------001-----1011011

@@ -5,12 +5,22 @@ Zicbom:
   description: Cache block management instructions
   type: unprivileged
   versions:
-  - version: 1.0.1-b34ea8a
+  - version: "1.0.1-b34ea8a"
     state: ratified
     ratification_date: 2022-05
   params:
     CACHE_BLOCK_SIZE:
       description: |
         The observable size of a cache block, in bytes
+      also_defined_in: [Zicboz, Zicbop]
       schema:
         type: integer
+    ALLOW_CBO_INVAL_UPGRADE_TO_FLUSH:
+      description: |
+        When true, an implementation can (when `menvcfg.CBIE` == `01`) upgrade a `cbo.inval`
+        instruction to a `cbo.flush`.
+
+        When false, an implementation does not support the upgrade, and the value '01' cannot be
+        written to `menvcfg.CBIE`.
+      schema:
+        type: boolean

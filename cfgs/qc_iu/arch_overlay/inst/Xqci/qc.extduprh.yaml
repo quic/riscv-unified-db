@@ -7,8 +7,9 @@ qc.extduprh:
     The width of the subset is determined by `rs2` bits [31:24] + 1 (1..32),
     and the offset of the subset is determined by `rs2` bits [23:16].
   definedBy:
-  - Xqci
-  - Xqcibm
+    anyOf:
+    - Xqci
+    - Xqcibm
   base: 32
   encoding:
     match:     0000111----------011-----0001011

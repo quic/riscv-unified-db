@@ -110,7 +110,7 @@ sc.w:
     - name: aq
       location: 26
     - name: rl
-      location: 27
+      location: 25
     - name: rs2
       location: 24-20
     - name: rs1
@@ -124,13 +124,15 @@ sc.w:
     vu: always
   operation(): |
     if (implemented?(ExtensionName::A) && (CSR[misa].A == 1'b0)) {
-      raise(ExceptionCode::IllegalInstruction, $encoding);
+      # even though this is a memory operation, the exception occurs before that would be known,
+      # so mode() is the correct reporting mode rathat than effective_ldst_mode()
+      raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
     }
 
     XReg virtual_address = X[rs1];
     XReg value = X[rs2];
 
-    if (!is_naturally_aligned<XLEN, 32>(virtual_address)) {
+    if (!is_naturally_aligned<32>(virtual_address)) {
       # can raise either LoadAddressMisaligned *or* LoadAccessFault
       #
       # from the spec:
@@ -140,13 +142,96 @@ sc.w:
       #   for the misalignment, if the misaligned access should not be emulated.
 
       if (LRSC_MISALIGNED_BEHAVIOR == "always raise misaligned exception") {
-        raise(ExceptionCode::LoadAddressMisaligned, virtual_address);
+        raise(ExceptionCode::LoadAddressMisaligned, effective_ldst_mode(), virtual_address);
       } else if (LRSC_MISALIGNED_BEHAVIOR == "always raise access fault") {
-        raise(ExceptionCode::LoadAccessFault, virtual_address);
+        raise(ExceptionCode::LoadAccessFault, effective_ldst_mode(), virtual_address);
       } else {
         unpredictable("Implementations may raise either a LoadAddressMisaligned or a LoadAccessFault when an LR/SC address is misaligned");
       }
     }
 
-    Boolean success = store_conditional<32>(virtual_address, value, aq, rl);
+    Boolean success = store_conditional<32>(virtual_address, value, aq, rl, $encoding);
     X[rd] = success ? 0 : 1;
+
+
+
+  sail(): |
+    {
+      if speculate_conditional () == false then {
+        /* should only happen in rmem
+         * rmem: allow SC to fail very early
+         */
+        X(rd) = zero_extend(0b1); RETIRE_SUCCESS
+      } else {
+        if extension("A") then {
+          /* normal non-rmem case
+           * rmem: SC is allowed to succeed (but might fail later)
+           */
+          /* Get the address, X(rs1) (no offset).
+           * Extensions might perform additional checks on address validity.
+           */
+          match ext_data_get_addr(rs1, zeros(), Write(Data), width) {
+            Ext_DataAddr_Error(e)  => { ext_handle_data_check_error(e); RETIRE_FAIL },
+            Ext_DataAddr_OK(vaddr) => {
+              let aligned : bool =
+                /* BYTE and HALF would only occur due to invalid decodes, but it doesn't hurt
+                 * to treat them as valid here; otherwise we'd need to throw an internal_error.
+                 */
+                match width {
+                  BYTE   => true,
+                  HALF   => vaddr[0..0] == 0b0,
+                  WORD   => vaddr[1..0] == 0b00,
+                  DOUBLE => vaddr[2..0] == 0b000
+                };
+              if not(aligned)
+              then { handle_mem_exception(vaddr, E_SAMO_Addr_Align()); RETIRE_FAIL }
+              else {
+                if match_reservation(vaddr) == false then {
+                  /* cannot happen in rmem */
+                  X(rd) = zero_extend(0b1); cancel_reservation(); RETIRE_SUCCESS
+                } else {
+                  match translateAddr(vaddr, Write(Data)) {  /* Write and ReadWrite are equivalent here:
+                                                              * both result in a SAMO exception */
+                    TR_Failure(e, _) => { handle_mem_exception(vaddr, e); RETIRE_FAIL },
+                    TR_Address(addr, _) => {
+                      let eares : MemoryOpResult(unit) = match (width, sizeof(xlen)) {
+                        (BYTE, _)    => mem_write_ea(addr, 1, aq & rl, rl, true),
+                        (HALF, _)    => mem_write_ea(addr, 2, aq & rl, rl, true),
+                        (WORD, _)    => mem_write_ea(addr, 4, aq & rl, rl, true),
+                        (DOUBLE, 64) => mem_write_ea(addr, 8, aq & rl, rl, true),
+                        _            => internal_error(__FILE__, __LINE__, "STORECON expected word or double")
+                      };
+                      match (eares) {
+                        MemException(e) => { handle_mem_exception(vaddr, e); RETIRE_FAIL },
+                        MemValue(_) => {
+                          rs2_val = X(rs2);
+                          let res : MemoryOpResult(bool) = match (width, sizeof(xlen)) {
+                            (BYTE, _)    => mem_write_value(addr, 1, rs2_val[7..0], aq & rl, rl, true),
+                            (HALF, _)    => mem_write_value(addr, 2, rs2_val[15..0], aq & rl, rl, true),
+                            (WORD, _)    => mem_write_value(addr, 4, rs2_val[31..0], aq & rl, rl, true),
+                            (DOUBLE, 64) => mem_write_value(addr, 8, rs2_val,        aq & rl, rl, true),
+                            _            => internal_error(__FILE__, __LINE__, "STORECON expected word or double")
+                          };
+                          match (res) {
+                            MemValue(true)  => { X(rd) = zero_extend(0b0); cancel_reservation(); RETIRE_SUCCESS },
+                            MemValue(false) => { X(rd) = zero_extend(0b1); cancel_reservation(); RETIRE_SUCCESS },
+                            MemException(e) => { handle_mem_exception(vaddr, e); RETIRE_FAIL }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          handle_illegal();
+          RETIRE_FAIL
+        }
+      }
+    }
+  
+  
+
+

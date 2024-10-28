@@ -5,10 +5,11 @@ qc.wrapi:
   description: |
     If `rs1` >= `imm` perform subtraction between `rs1` and `imm`.
     If `rs1` < 0, perform addition between `rs1` and `imm`,
-    else, select `rs1`. The result is stored in `rd`. 
+    else, select `rs1`. The result is stored in `rd`.
   definedBy:
-  - Xqci
-  - Xqcia
+    anyOf:
+    - Xqci
+    - Xqcia
   base: 32
   encoding:
     match:     0----------------000-----0001011

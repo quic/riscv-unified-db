@@ -6,8 +6,9 @@ qc.e.jal:
     Jump to a PC-relative offset and store the return
     address in x1.
   definedBy:
-  - Xqci
-  - Xqcilb
+    anyOf:
+    - Xqci
+    - Xqcilb
   assembly: " imm"
   base: 32
   encoding:
@@ -23,6 +24,6 @@ qc.e.jal:
     vs: always
     vu: always
   operation(): |
-    XReg retrun_addr = PC + 6;
-    jump_halfword(PC + imm);
+    XReg retrun_addr = $pc + 6;
+    jump_halfword($pc + imm);
     X[1] = retrun_addr;

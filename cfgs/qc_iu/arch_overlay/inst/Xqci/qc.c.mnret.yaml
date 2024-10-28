@@ -26,4 +26,4 @@ qc.c.mnret:
     }
     CSR[mncause].MPP = implemented?(ExtensionName::U) ? 2'b00 : 2'b11;
     CSR[mcause].NMI = 0;
-    PC = CSR[mnepc].sw_read();
+    $pc = CSR[qc_mnepc].sw_read();

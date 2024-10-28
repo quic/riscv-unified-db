@@ -6,8 +6,9 @@ qc.c.dir:
     Globally disable interrupts, write previous value of `mstatus` to `rd`.
     Equivalent to "csrrci `rd`, `mstatus`, 8".
   definedBy:
-  - Xqci
-  - Xqciint
+    anyOf:
+    - Xqci
+    - Xqciint
   assembly: " xd"
   base: 32
   encoding:

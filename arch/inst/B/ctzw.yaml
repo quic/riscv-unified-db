@@ -8,7 +8,8 @@ ctzw:
     to the most-significant bit of the least-significant word (i.e., 31). Accordingly, if the
     least-significant word is 0, the output is 32, and if the least-significant bit
     of the input is a 1, the output is 0.
-  definedBy: [B, Zbb]
+  definedBy:
+    anyOf: [B, Zbb]
   base: 64
   assembly: xd, xs1
   encoding:
@@ -25,7 +26,26 @@ ctzw:
     vu: always
   operation(): |
     if (implemented?(ExtensionName::B) && (CSR[misa].B == 1'b0)) {
-      raise (ExceptionCode::IllegalInstruction, $encoding);
+      raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
     }
 
     X[rd] = (xlen() - 1) - $signed(lowest_set_bit(X[rs1][31:0]));
+
+
+
+  sail(): |
+    {
+      let rs1_val = X(rs1);
+      result : nat = 0;
+      done : bool = false;
+      foreach (i from 0 to 31)
+        if not(done) then if rs1_val[i] == bitzero
+                        then result = result + 1
+                        else done = true;
+      X(rd) = to_bits(sizeof(xlen), result);
+      RETIRE_SUCCESS
+    }
+  
+  
+
+

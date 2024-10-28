@@ -6,8 +6,9 @@ qc.e.sw:
     Store 32 bits of data from register `rs2` to an
     address formed by adding `rs1` to a signed offset `imm`.
   definedBy:
-  - Xqci
-  - Xqcilo
+    anyOf:
+    - Xqci
+    - Xqcilo
   assembly: " xs2, imm(xs1)"
   base: 32
   encoding:
@@ -26,4 +27,4 @@ qc.e.sw:
     vu: always
   operation(): |
     XReg virtual_address = X[rs1] + $signed(imm);
-    write_memory<32>(virtual_address, X[rs2][31:0]);
+    write_memory<32>(virtual_address, X[rs2][31:0], $encoding);

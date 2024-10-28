@@ -7,8 +7,9 @@ qc.insbr:
     The width of the subset is determined by `rs2` bits [31:16] + 1 (1..32),
     and the offset of the subset is determined by `rs2` bits [15:0].
   definedBy:
-  - Xqci
-  - Xqcibm
+    anyOf:
+    - Xqci
+    - Xqcibm
   base: 32
   encoding:
     match:     0000000----------011-----0001011
@@ -31,5 +32,5 @@ qc.insbr:
     XReg width = X[rs2][31:16] + 1;
     XReg shamt = X[rs2][15:0];
     XReg mask = ((1 << width) - 1) << shamt;
-    XReg orig_val = X[rd]; 
+    XReg orig_val = X[rd];
     X[rd] = (orig_val & ~mask) | ((X[rs1] << shamt) & mask);

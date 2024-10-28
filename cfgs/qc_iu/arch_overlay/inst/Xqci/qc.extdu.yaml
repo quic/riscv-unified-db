@@ -7,8 +7,9 @@ qc.extdu:
     The width of the subset is determined by (`width_minus1` + 1) (1..32),
     and the offset (into the pair) of the subset is determined by `shamt`.
   definedBy:
-  - Xqci
-  - Xqcibm
+    anyOf:
+    - Xqci
+    - Xqcibm
   base: 32
   encoding:
     match:     10---------------010-----0001011

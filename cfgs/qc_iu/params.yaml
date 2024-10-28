@@ -22,8 +22,46 @@ params:
   # must be true when Zicclsm is supported
   MISALIGNED_LDST: false
 
+  TIME_CSR_IMPLEMENTED: true
+
   # whether or not the implementation supports misaligned atomics
   # MISALIGNED_AMO: false
+
+  HPM_COUNTER_EN:
+  - false # CY - must be false
+  - false # TM - must be false
+  - false # IR - must be false
+  - true  # HPM3 implemented
+  - false # HPME4
+  - false # HPME5
+  - false # HPME6
+  - false # HPME7
+  - false # HPME8
+  - false # HPME9
+  - false # HPME10
+  - false # HPME11
+  - false # HPME12
+  - false # HPME13
+  - false # HPME14
+  - false # HPME15
+  - false # HPME16
+  - false # HPME17
+  - false # HPME18
+  - false # HPME19
+  - false # HPME20
+  - false # HPME21
+  - false # HPME22
+  - false # HPME23
+  - false # HPME24
+  - false # HPME25
+  - false # HPME26
+  - false # HPME27
+  - false # HPME28
+  - false # HPME29
+  - false # HPME30
+  - false # HPME31
+
+  HPM_EVENTS: [1] # defined HPM event numbers
 
   # Indicates which counters can be disabled from mcountinhibit
   #
@@ -111,7 +149,11 @@ params:
   # when false, writing an illegal value to a WLRL CSR field is ignored
   TRAP_ON_ILLEGAL_WLRL: true
   TRAP_ON_UNIMPLEMENTED_INSTRUCTION: true
+  TRAP_ON_RESERVED_INSTRUCTION: true
   TRAP_ON_UNIMPLEMENTED_CSR: true
+
+  MISA_CSR_IMPLEMENTED: true
+  MTVEC_MODES: [0,1]
 
   # when true, *tval is written with the virtual PC of the EBREAK instruction (same information as *epc)
   # when false, *tval is written with 0 on an EBREAK instruction
@@ -198,4 +240,4 @@ params:
   M_MODE_ENDIANESS: little
 
   MISALIGNED_LDST_EXCEPTION_PRIORITY: low
-  MAX_MISALIGNED_ATOMICITY_GRANULE_SIZE: 0
+  MISALIGNED_MAX_ATOMICITY_GRANULE_SIZE: 0

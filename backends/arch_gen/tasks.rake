@@ -11,11 +11,16 @@ def arch_def_for(config_name)
   @arch_defs ||= {}
   return @arch_defs[config_name] if @arch_defs.key?(config_name)
 
-  if config_name == "_"
-    @arch_defs[config_name] = ArchDef.new
-  else
-    @arch_defs[config_name] = ImplArchDef.new(config_name)
-  end
+  @arch_defs[config_name] =
+    if config_name == "_"
+      ArchDef.new("_", $root / "gen" / "_" / "arch" / "arch_def.yaml")
+    else
+      ArchDef.new(
+        config_name,
+        $root / "gen" / config_name / "arch" / "arch_def.yaml",
+        overlay_path: $root / "cfgs" / config_name / "arch_overlay"
+      )
+    end
 end
 
 file "#{$root}/.stamps/arch-gen.stamp" => (
@@ -52,11 +57,65 @@ file "#{$root}/.stamps/arch-gen.stamp" => (
     ext_obj[ext_name]["__source"] = f
     [ext_name, ext_obj[ext_name]]
   end.to_h
+  profile_family_hash = Dir.glob($root / "arch" / "profile_family" / "**" / "*.yaml").map do |f|
+    profile_obj = YAML.load_file(f)
+    profile_name = profile_obj.keys[0]
+    profile_obj[profile_name]["name"] = profile_name
+    profile_obj[profile_name]["__source"] = f
+    [profile_name, profile_obj[profile_name]]
+  end.to_h
+  profile_hash = Dir.glob($root / "arch" / "profile" / "**" / "*.yaml").map do |f|
+    profile_obj = YAML.load_file(f)
+    profile_name = profile_obj.keys[0]
+    profile_obj[profile_name]["name"] = profile_name
+    profile_obj[profile_name]["__source"] = f
+    [profile_name, profile_obj[profile_name]]
+  end.to_h
+  manual_hash = {}
+  Dir.glob($root / "arch" / "manual" / "**" / "contents.yaml").map do |f|
+    manual_version = YAML.load_file(f)
+    manual_id = manual_version["manual"]
+    unless manual_hash.key?(manual_id)
+      manual_info_files = Dir.glob($root / "arch" / "manual" / "**" / "#{manual_id}.yaml")
+      raise "Could not find manual info '#{manual_id}'.yaml, needed by #{f}" if manual_info_files.empty?
+      raise "Found multiple manual infos '#{manual_id}'.yaml, needed by #{f}" if manual_info_files.size > 1
+
+      manual_info_file = manual_info_files.first
+      manual_hash[manual_id] = YAML.load_file(manual_info_file)
+      manual_hash[manual_id]["__source"] = manual_info_file
+      # TODO: schema validation
+    end
+
+    manual_hash[manual_id]["versions"] ||= []
+    manual_hash[manual_id]["versions"] << YAML.load_file(f)
+    # TODO: schema validation
+    manual_hash[manual_id]["versions"].last["__source"] = f
+  end
+  crd_family_hash = Dir.glob($root / "arch" / "crd_family" / "**" / "*.yaml").map do |f|
+    family_obj = YAML.load_file(f, permitted_classes: [Date])
+    family_name = family_obj.keys[0]
+    family_obj[family_name]["name"] = family_name
+    family_obj[family_name]["__source"] = f
+    [family_name, family_obj[family_name]]
+  end.to_h
+  crd_hash = Dir.glob($root / "arch" / "crd" / "**" / "*.yaml").map do |f|
+    crd_obj = YAML.load_file(f, permitted_classes: [Date])
+    crd_name = crd_obj.keys[0]
+    crd_obj[crd_name]["name"] = crd_name
+    crd_obj[crd_name]["__source"] = f
+    [crd_name, crd_obj[crd_name]]
+  end.to_h
 
   arch_def = {
+    "type" => "unconfigured",
     "instructions" => inst_hash,
     "extensions" => ext_hash,
     "csrs" => csr_hash,
+    "profile_families" => profile_family_hash,
+    "profiles" => profile_hash,
+    "manuals" => manual_hash,
+    "crd_families" => crd_family_hash,
+    "crds" => crd_hash
   }
 
   dest = "#{$root}/gen/_/arch/arch_def.yaml"
@@ -66,10 +125,14 @@ file "#{$root}/.stamps/arch-gen.stamp" => (
   FileUtils.touch(t.name)
 end
 
+obj_model_files = Dir.glob($root / "lib" / "arch_obj_models" / "*.rb")
+obj_model_files << ($root / "lib" / "arch_def.rb")
+
+arch_files = Dir.glob($root / "arch" / "**" / "*.yaml")
+
 # stamp to indicate completion of Arch Gen for a given config
 rule %r{#{$root}/\.stamps/arch-gen-.*\.stamp} => proc { |tname|
   config_name = Pathname.new(tname).basename(".stamp").sub("arch-gen-", "")
-  arch_files = Dir.glob($root / "arch" / "**" / "*.yaml")
   config_files =
     Dir.glob($root / "cfgs" / config_name / "arch_overlay" / "**" / "*.yaml") +
     [($root / "cfgs" / config_name / "params.yaml").to_s]
@@ -77,8 +140,14 @@ rule %r{#{$root}/\.stamps/arch-gen-.*\.stamp} => proc { |tname|
     "#{$root}/.stamps",
     "#{ARCH_GEN_DIR}/lib/arch_gen.rb",
     "#{$root}/lib/idl/ast.rb",
-    "#{ARCH_GEN_DIR}/tasks.rake"
-  ] + arch_files + config_files
+    "#{ARCH_GEN_DIR}/tasks.rake",
+    arch_files,
+    config_files,
+    
+    # the stamp file is not actually dependent on the Ruby object model,
+    # but in general we want to rebuild anything using this stamp when the object model changes
+    obj_model_files.map(&:to_s)
+  ].flatten
 } do |t|
   config_name = Pathname.new(t.name).basename(".stamp").sub("arch-gen-", "")
 

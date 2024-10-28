@@ -4,14 +4,15 @@ mtvec:
   long_name: Machine Trap Vector Control
   address: 0x305
   priv_mode: M
-  length: 64
+  length: MXLEN
   description: Controls where traps jump.
-  definedBy: I
+  definedBy: Sm
   fields:
     BASE:
-      location: 63-2
+      location_rv64: 63-2
+      location_rv32: 31-2
       description: |
-        Bits [63:2] of the exception vector physical address for any trap taken in M-mode.
+        Bits [MXLEN-1:2] of the exception vector physical address for any trap taken in M-mode.
 
         The implementation physical memory map may resitrict which values are legal in this field.
       type: RW-R
@@ -31,11 +32,24 @@ mtvec:
         When Direct, all synchronous exceptions and asynchronous interrupts jump to (`mtvec.BASE` << 2).
 
         When Vectored, asynchronous interrupts jump to (`mtvec.BASE` << 2 + `mcause.CAUSE`*4) while synchronous exceptions continue to jump to (`mtvec.BASE` << 2).
-      type: RW-R
+ 
+      type(): |
+        return ($array_size(MTVEC_MODES) == 1) ? CsrFieldType::RO : CsrFieldType::RWR;
       sw_write(csr_value): |
-        if (csr_value.MODE == 0 || csr_value.MODE == 1) {
-          return csr_value.MODE;
+        if (csr_value.MODE == 0) {
+          if (ary_includes?<$array_size(MTVEC_MODES), 2>(MTVEC_MODES, 0)) {
+            return csr_value.MODE;
+          } else {
+            return UNDEFINED_LEGAL_DETERMINISTIC;
+          }
+        } else if (csr_value.MODE == 1) {
+          if (ary_includes?<$array_size(MTVEC_MODES), 2>(MTVEC_MODES, 1)) {
+            return csr_value.MODE;
+          } else {
+            return UNDEFINED_LEGAL_DETERMINISTIC;
+          }
         } else {
           return UNDEFINED_LEGAL_DETERMINISTIC;
         }
-      reset_value: 0
+      reset_value(): |
+        return ($array_size(MTVEC_MODES) == 1) ? MTVEC_MODES[0] : UNDEFINED_LEGAL;

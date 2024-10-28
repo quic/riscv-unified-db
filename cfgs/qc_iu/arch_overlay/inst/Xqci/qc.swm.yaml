@@ -6,8 +6,9 @@ qc.swm:
     Stores multiple words from the registers starting at `rs3` to the address starting at (`rs1` + `imm`).
     The number of words is in `rs2`.
   definedBy:
-  - Xqci
-  - Xqcilsm
+    anyOf:
+    - Xqci
+    - Xqcilsm
   base: 32
   encoding:
     match:     00---------------111-----0101011
@@ -31,8 +32,8 @@ qc.swm:
   operation(): |
     XReg vaddr = X[rs1] + imm;
     XReg num_words = X[rs2];
-    raise (ExceptionCode::IllegalInstruction, $encoding) if ((rs3 + num_words) > 32);
+    raise (ExceptionCode::IllegalInstruction, effective_ldst_mode(), $encoding) if ((rs3 + num_words) > 32);
     for (U32 i = 0; i < num_words; i++) {
-      write_memory<32>(vaddr, X[rs3 + i]);
+      write_memory<32>(vaddr, X[rs3 + i], $encoding);
       vaddr = vaddr + 4;
     }

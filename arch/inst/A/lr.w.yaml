@@ -53,7 +53,7 @@ lr.w:
     - name: aq
       location: 26
     - name: rl
-      location: 27
+      location: 25
     - name: rs1
       location: 19-15
     - name: rd
@@ -65,12 +65,14 @@ lr.w:
     vu: always
   operation(): |
     if (implemented?(ExtensionName::A) && (CSR[misa].A == 1'b0)) {
-      raise (ExceptionCode::IllegalInstruction, $encoding);
+      # even though this is a memory operation, the exception occurs before that would be known,
+      # so mode() is the correct reporting mode rathat than effective_ldst_mode()
+      raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
     }
 
     XReg virtual_address = X[rs1];
 
-    if (!is_naturally_aligned<XLEN, 32>(virtual_address)) {
+    if (!is_naturally_aligned<32>(virtual_address)) {
       # can raise either LoadAddressMisaligned *or* LoadAccessFault
       #
       # from the spec:
@@ -80,17 +82,66 @@ lr.w:
       #   for the misalignment, if the misaligned access should not be emulated.
 
       if (LRSC_MISALIGNED_BEHAVIOR == "always raise misaligned exception") {
-        raise(ExceptionCode::LoadAddressMisaligned, virtual_address);
+        raise(ExceptionCode::LoadAddressMisaligned, effective_ldst_mode(), virtual_address);
       } else if (LRSC_MISALIGNED_BEHAVIOR == "always raise access fault") {
-        raise(ExceptionCode::LoadAccessFault, virtual_address);
+        raise(ExceptionCode::LoadAccessFault, effective_ldst_mode(), virtual_address);
       } else {
         unpredictable("Implementations may raise either a LoadAddressMisaligned or a LoadAccessFault when an LR/SC address is misaligned");
       }
     }
 
-    XReg load_value = load_reserved<32>(virtual_address, aq, rl);
+    XReg load_value = load_reserved<32>(virtual_address, aq, rl, $encoding);
     if (xlen() == 64) {
       X[rd] = load_value;
     } else {
       X[rd] = sext(load_value[31:0], 32);
     }
+
+
+
+  sail(): |
+    {
+      if extension("A") then {
+        /* Get the address, X(rs1) (no offset).
+         * Extensions might perform additional checks on address validity.
+         */
+        match ext_data_get_addr(rs1, zeros(), Read(Data), width) {
+          Ext_DataAddr_Error(e)  => { ext_handle_data_check_error(e); RETIRE_FAIL },
+          Ext_DataAddr_OK(vaddr) => {
+            let aligned : bool =
+               /* BYTE and HALF would only occur due to invalid decodes, but it doesn't hurt
+                * to treat them as valid here; otherwise we'd need to throw an internal_error.
+                */
+               match width {
+                 BYTE   => true,
+                 HALF   => vaddr[0..0] == 0b0,
+                 WORD   => vaddr[1..0] == 0b00,
+                 DOUBLE => vaddr[2..0] == 0b000
+               };
+            /* "LR faults like a normal load, even though it's in the AMO major opcode space."
+             * - Andrew Waterman, isa-dev, 10 Jul 2018.
+             */
+            if not(aligned)
+            then { handle_mem_exception(vaddr, E_Load_Addr_Align()); RETIRE_FAIL }
+            else match translateAddr(vaddr, Read(Data)) {
+                   TR_Failure(e, _)    => { handle_mem_exception(vaddr, e); RETIRE_FAIL },
+                   TR_Address(addr, _) =>
+                     match (width, sizeof(xlen)) {
+                       (BYTE, _)    => process_loadres(rd, vaddr, mem_read(Read(Data), addr, 1, aq, aq & rl, true), false),
+                       (HALF, _)    => process_loadres(rd, vaddr, mem_read(Read(Data), addr, 2, aq, aq & rl, true), false),
+                       (WORD, _)    => process_loadres(rd, vaddr, mem_read(Read(Data), addr, 4, aq, aq & rl, true), false),
+                       (DOUBLE, 64) => process_loadres(rd, vaddr, mem_read(Read(Data), addr, 8, aq, aq & rl, true), false),
+                       _            => internal_error(__FILE__, __LINE__, "Unexpected AMO width")
+                     }
+                 }
+          }
+        }
+      } else {
+        handle_illegal();
+        RETIRE_FAIL
+      }
+    }
+  
+  
+
+

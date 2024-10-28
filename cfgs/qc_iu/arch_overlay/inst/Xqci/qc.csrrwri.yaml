@@ -11,8 +11,9 @@ qc.csrrwri:
     If `rd`=`x0`, then the instruction shall not read the CSR and shall not
     cause any of the side effects that might occur on a CSR read.
   definedBy:
-  - Xqci
-  - Xqcicsr
+    anyOf:
+    - Xqci
+    - Xqcicsr
   assembly: " xd, imm, xs2"
   encoding:
     match: 1000111----------000-----1110011
@@ -33,7 +34,7 @@ qc.csrrwri:
     XReg csr = X[rs2];
     if (rd != 0) {
       X[rd] = CSR[csr].sw_read();
-    } 
+    }
     # writes the zero-extended immediate to the CSR,
     # performing any WARL transformations first
     CSR[csr].sw_write({{XLEN-5{1'b0}}, imm});

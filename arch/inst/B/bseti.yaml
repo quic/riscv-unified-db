@@ -6,7 +6,8 @@ bseti:
     This instruction returns rs1 with a single bit set at the index specified in shamt.
     The index is read from the lower log2(XLEN) bits of shamt.
     For RV32, the encodings corresponding to shamt[5]=1 are reserved.
-  definedBy: [B, Zbs]
+  definedBy:
+    anyOf: [B, Zbs]
   assembly: xd, xs1, shamt
   encoding:
     RV32:
@@ -34,8 +35,30 @@ bseti:
     vu: always
   operation(): |
     if (implemented?(ExtensionName::B) && (CSR[misa].B == 1'b0)) {
-      raise (ExceptionCode::IllegalInstruction, $encoding);
+      raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
     }
 
     XReg index = shamt & (xlen() - 1);
     X[rd] = X[rs1] | (1 << index);
+
+
+
+  sail(): |
+    {
+      let rs1_val = X(rs1);
+      let mask : xlenbits = if sizeof(xlen) == 32
+                            then zero_extend(0b1) << shamt[4..0]
+                            else zero_extend(0b1) << shamt;
+      let result : xlenbits = match op {
+        RISCV_BCLRI => rs1_val & ~(mask),
+        RISCV_BEXTI => zero_extend(bool_to_bits((rs1_val & mask) != zeros())),
+        RISCV_BINVI => rs1_val ^ mask,
+        RISCV_BSETI => rs1_val | mask
+      };
+      X(rd) = result;
+      RETIRE_SUCCESS
+    }
+  
+  
+
+

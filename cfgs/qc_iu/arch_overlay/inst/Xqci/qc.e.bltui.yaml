@@ -5,8 +5,9 @@ qc.e.bltui:
   description: |
     Branches to `PC` + `offset` if the unsigned value in `rs1` is less than the unsigned immediate `imm`.
   definedBy:
-  - Xqci
-  - Xqcibi
+    anyOf:
+    - Xqci
+    - Xqcibi
   base: 32
   encoding:
     match:     -----------------------11110-----100-----0011111
@@ -29,5 +30,5 @@ qc.e.bltui:
     vu: always
   operation(): |
     if (X[rs1] < imm) {
-      jump_halfword(PC + $signed(offset));
+      jump_halfword($pc + $signed(offset));
     }

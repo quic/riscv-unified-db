@@ -4,7 +4,7 @@ Xqci:
   type: unprivileged
   long_name: Qualcomm uC extensions
   versions:
-  - version: 0.1
+  - version: "0.1.0"
     state: development
     ratification_date: null
     contributors:
@@ -14,7 +14,7 @@ Xqci:
     - name: Derek Hower
       company: Qualcomm Technologies, Inc.
       email: dhower@qti.qualcomm.com
-  - version: 0.2
+  - version: "0.2.0"
     state: development
     ratification_date: null
     contributors:
@@ -24,10 +24,10 @@ Xqci:
     - name: Derek Hower
       company: Qualcomm Technologies, Inc.
       email: dhower@qti.qualcomm.com
-    changes: |
-      * Splits Xqci into sub-extensions based on instruction type
-      * Removed shXadd instructions in favor of generic shladd
-  - version: 0.3
+    changes:
+      - Splits Xqci into sub-extensions based on instruction type
+      - Removed shXadd instructions in favor of generic shladd
+  - version: "0.3.0"
     state: development
     ratification_date: null
     contributors:
@@ -37,26 +37,26 @@ Xqci:
     - name: Derek Hower
       company: Qualcomm Technologies, Inc.
       email: dhower@qti.qualcomm.com
-    changes: |
-      * Rename extension and sub extensions to match toolchain guidelines
-      * Rename mnemonics to match toolchain guidelines
-      * Ensure every instruction belongs to at least one sub extension
+    changes:
+      - Rename extension and sub extensions to match toolchain guidelines
+      - Rename mnemonics to match toolchain guidelines
+      - Ensure every instruction belongs to at least one sub extension
     implies:
-    - [Xqcia, 0.1]
-    - [Xqciac, 0.1]
-    - [Xqcibi, 0.1]
-    - [Xqcibm, 0.1]
-    - [Xqcicli, 0.1]
-    - [Xqcicm, 0.1]
-    - [Xqcics, 0.1]
-    - [Xqcicsr, 0.1]
-    - [Xqciint, 0.1]
-    - [Xqcilb, 0.1]
-    - [Xqcili, 0.1]
-    - [Xqcilia, 0.1]
-    - [Xqcilo, 0.1]
-    - [Xqcilsm, 0.1]
-    - [Xqcisls, 0.1]
+    - [Xqcia, "0.1.0"]
+    - [Xqciac, "0.1.0"]
+    - [Xqcibi, "0.1.0"]
+    - [Xqcibm, "0.1.0"]
+    - [Xqcicli, "0.1.0"]
+    - [Xqcicm, "0.1.0"]
+    - [Xqcics, "0.1.0"]
+    - [Xqcicsr, "0.1.0"]
+    - [Xqciint, "0.1.0"]
+    - [Xqcilb, "0.1.0"]
+    - [Xqcili, "0.1.0"]
+    - [Xqcilia, "0.1.0"]
+    - [Xqcilo, "0.1.0"]
+    - [Xqcilsm, "0.1.0"]
+    - [Xqcisls, "0.1.0"]
   description: |
     The Xqci extension includes a set of instructions that improve RISC-V code density and
     performance in microontrollers. It fills several gaps:

@@ -29,9 +29,47 @@ ecall:
     vu: always
   operation(): |
     if (mode() == PrivilegeMode::M) {
-      raise(ExceptionCode::Mcall, 0);
+      if (TRAP_ON_ECALL_FROM_M) {
+        raise_precise(ExceptionCode::Mcall, PrivilegeMode::M, 0);
+      } else {
+        eei_ecall_from_m();
+      }
     } else if (mode() == PrivilegeMode::S) {
-      raise (ExceptionCode::Scall, 0);
-    } else if (mode() == PrivilegeMode::U) {
-      raise (ExceptionCode::Ucall, 0);
+      if (TRAP_ON_ECALL_FROM_S) {
+        raise_precise(ExceptionCode::Scall, PrivilegeMode::S, 0);
+      } else {
+        eei_ecall_from_s();
+      }
+    } else if (mode() == PrivilegeMode::U || mode() == PrivilegeMode::VU) {
+      if (TRAP_ON_ECALL_FROM_U) {
+        raise_precise(ExceptionCode::Ucall, mode(), 0);
+      } else {
+        eei_ecall_from_u();
+      }
+    } else if (mode() == PrivilegeMode::VS) {
+      if (TRAP_ON_ECALL_FROM_VS) {
+        raise_precise(ExceptionCode::VScall, PrivilegeMode::VS, 0);
+      } else {
+        eei_ecall_from_vs();
+      }
     }
+
+
+
+  sail(): |
+    {
+      let t : sync_exception =
+        struct { trap = match (cur_privilege) {
+                          User       => E_U_EnvCall(),
+                          Supervisor => E_S_EnvCall(),
+                          Machine    => E_M_EnvCall()
+                        },
+                 excinfo = (None() : option(xlenbits)),
+                 ext     = None() };
+      set_next_pc(exception_handler(cur_privilege, CTL_TRAP(t), PC));
+      RETIRE_FAIL
+    }
+  
+  
+
+

@@ -28,4 +28,4 @@ qc.c.mret:
       set_mode(PrivilegeMode::M);
     }
     CSR[mstatus].MPP = implemented?(ExtensionName::U) ? 2'b00 : 2'b11;
-    PC = CSR[mepc].sw_read();
+    $pc = CSR[mepc].sw_read();

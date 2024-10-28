@@ -6,8 +6,9 @@ qc.c.di:
     Globally disable interrupts.
     Equivalent to "csrrci `zero`, `mstatus`, 8".
   definedBy:
-  - Xqci
-  - Xqciint
+    anyOf:
+    - Xqci
+    - Xqciint
   assembly: ""
   base: 32
   encoding:

@@ -5,8 +5,9 @@ qc.muladdi:
   description: |
     Increments `rd` by the multiplication of `rs1` and a signed immediate `imm`
   definedBy:
-  - Xqci
-  - Xqciac
+    anyOf:
+    - Xqci
+    - Xqciac
   base: 32
   encoding:
     match:     -----------------110-----0001011

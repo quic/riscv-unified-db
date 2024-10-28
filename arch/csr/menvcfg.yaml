@@ -126,7 +126,11 @@ menvcfg:
     not exist.
   priv_mode: M
   length: 64
-  definedBy: U
+  definedBy:
+    allOf:
+      - name: Sm
+        version: ">=1.12"
+      - name: U
   fields:
     STCE:
       location: 63
@@ -154,6 +158,10 @@ menvcfg:
         Furthermore, henvcfg.PBMTE is read-only zero if
         menvcfg.PBMTE is zero.
         <% end %>
+
+        After changing `menvcfg.PBMTE`, executing an `sfence.vma` instruction with _rs1_=_x0_ and
+        _rs2_=_x0_ suffices to synchronize address-translation caches with respect to the altered
+        interpretation of page-table entries' PBMT fields.
 
       definedBy: Svpbmt
       type: RW
@@ -238,7 +246,9 @@ menvcfg:
       definedBy: Zicbom
       type: RW-R
       sw_write(csr_value): |
-        if (csr_value.CBIE == 0 || csr_value.CBIE == 1 || csr_value.CBIE == 3) {
+        if ((csr_value.CBIE == 0) ||
+            (ALLOW_CBO_INVAL_UPGRADE_TO_FLUSH && (csr_value.CBIE == 1)) ||
+            (csr_value.CBIE == 3)) {
           return csr_value.CBIE;
         } else {
           return CSR[menvcfg].CBIE;

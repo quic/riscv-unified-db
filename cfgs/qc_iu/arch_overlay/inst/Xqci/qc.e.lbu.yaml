@@ -7,8 +7,9 @@ qc.e.lbu:
     address formed by adding `rs1` to a signed offset `imm`.
     Zero extend the result.
   definedBy:
-  - Xqci
-  - Xqcilo
+    anyOf:
+    - Xqci
+    - Xqcilo
   assembly: " xd, imm(xs1)"
   base: 32
   encoding:
@@ -27,4 +28,4 @@ qc.e.lbu:
     vu: always
   operation(): |
     XReg virtual_address = X[rs1] + imm;
-    X[rd] = read_memory<8>(virtual_address);
+    X[rd] = read_memory<8>(virtual_address, $encoding);

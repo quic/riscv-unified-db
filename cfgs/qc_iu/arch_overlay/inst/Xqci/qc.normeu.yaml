@@ -3,13 +3,14 @@
 qc.normeu:
   long_name: Unsigned Even Normalization
   description: |
-    Unsigned even normalization of `rs1` (exponent is even). 
+    Unsigned even normalization of `rs1` (exponent is even).
     Even exponent written in bits[7:0] of the result.
     Mantissa (based on even exponent) written in bits[31:8] of the result.
-    Write result to `rd`. 
+    Write result to `rd`.
   definedBy:
-  - Xqci
-  - Xqcia
+    anyOf:
+    - Xqci
+    - Xqcia
   base: 32
   encoding:
     match:     000100100000-----011-----0001011
@@ -31,4 +32,3 @@ qc.normeu:
     XReg exp = (X[rs1] << clz);
     XReg mnt = (-clz);
     X[rd] = {mnt[23:0],exp[7:0]};
-    

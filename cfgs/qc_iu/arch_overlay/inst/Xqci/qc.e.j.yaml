@@ -3,10 +3,11 @@
 qc.e.j:
   long_name: Jump
   description: |
-    Jump to a PC-relative offset 
+    Jump to a PC-relative offset
   definedBy:
-  - Xqci
-  - Xqcilb
+    anyOf:
+    - Xqci
+    - Xqcilb
   assembly: " imm"
   base: 32
   encoding:
@@ -22,5 +23,4 @@ qc.e.j:
     vs: always
     vu: always
   operation(): |
-    XReg retrun_addr = PC + 6;
-    jump_halfword(PC + imm);
+    jump_halfword($pc + imm);

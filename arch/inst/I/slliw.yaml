@@ -10,7 +10,7 @@ slliw:
     match: 0000000----------001-----0011011
     variables:
     - name: shamt
-      location: 25-20
+      location: 24-20
     - name: rs1
       location: 19-15
     - name: rd
@@ -20,6 +20,25 @@ slliw:
     u: always
     vs: always
     vu: always
+  data_independent_timing: true
   operation(): |
     # shamt is between 0-32
     X[rd] = sext(X[rs1] << shamt, 31);
+
+
+
+  sail(): |
+    {
+      let rs1_val = (X(rs1))[31..0];
+      let result : bits(32) = match op {
+        RISCV_SLLIW => rs1_val << shamt,
+        RISCV_SRLIW => rs1_val >> shamt,
+        RISCV_SRAIW => shift_right_arith32(rs1_val, shamt)
+      };
+      X(rd) = sign_extend(result);
+      RETIRE_SUCCESS
+    }
+  
+  
+
+

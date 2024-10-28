@@ -6,7 +6,8 @@ roriw:
     This instruction performs a rotate right on the least-significant word of rs1 by the amount in
     the least-significant log2(XLEN) bits of shamt. The resulting word value is sign-extended by
     copying bit 31 to all of the more-significant bits.
-  definedBy: [B, Zbb, Zbkb]
+  definedBy:
+    anyOf: [B, Zbb, Zbkb]
   assembly: xd, xs1, shamt
   base: 64
   encoding:
@@ -23,12 +24,27 @@ roriw:
     u: always
     vs: always
     vu: always
+  data_independent_timing: true
   operation(): |
     if (implemented?(ExtensionName::B) && (CSR[misa].B == 1'b0)) {
-      raise (ExceptionCode::IllegalInstruction, $encoding);
+      raise (ExceptionCode::IllegalInstruction, mode(), $encoding);
     }
 
     XReg rs1_word = X[rs1][31:0];
 
     XReg unextended_result = (X[rs1] >> shamt) | (X[rs1] << (32 - shamt));
     X[rd] = {{32{unextended_result[31]}}, unextended_result};
+
+
+
+  sail(): |
+    {
+      let rs1_val = (X(rs1))[31..0];
+      let result : xlenbits = sign_extend(rs1_val >>> shamt);
+      X(rd) = result;
+      RETIRE_SUCCESS
+    }
+  
+  
+
+

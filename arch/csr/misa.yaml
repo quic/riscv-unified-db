@@ -4,12 +4,13 @@ misa:
   long_name: Machine ISA Control
   address: 0x301
   priv_mode: M
-  length: 64
+  length: MXLEN
   description: Reports the XLEN and "major" extensions supported by the ISA.
-  definedBy: I
+  definedBy: Sm
   fields:
     MXL:
-      location: 63-62
+      location_rv32: 31-30
+      location_rv64: 63-62
       description: XLEN in M-mode.
       type: RO
       reset_value: 2
@@ -18,66 +19,65 @@ misa:
       description: |
         Indicates support for the `A` (atomic) extension.
 
-        <%- if MUTABLE_MISA_A -%>
+        [when,"MUTABLE_MISA_A == true"]
         Writing 0 to this field will cause all atomic instructions to raise an `IllegalInstruction` exception.
-        <%- end -%>
       type(): |
         return (implemented?(ExtensionName::A) && MUTABLE_MISA_A) ? CsrFieldType::RW : CsrFieldType::RO;
-      reset_value(): |
-        return implemented?(ExtensionName::A) ? 1 : 0;
+      definedBy: A
+      reset_value: 1
     B:
       location: 1
       description: |
         Indicates support for the `B` (bitmanip) extension.
 
-        <%- if MUTABLE_MISA_B -%>
+        [when,"MUTABLE_MISA_B == true"]
         Writing 0 to this field will cause all bitmanip instructions to raise an `IllegalInstruction` exception.
-        <%- end -%>
       type(): |
         return (implemented?(ExtensionName::B) && MUTABLE_MISA_B) ? CsrFieldType::RW : CsrFieldType::RO;
-      reset_value(): |
-        return implemented?(ExtensionName::B) ? 1 : 0;
+      definedBy: B
+      reset_value: 1
     C:
       location: 2
       description: |
         Indicates support for the `C` (compressed) extension.
 
-        <%- if MUTABLE_MISA_C -%>
+        [when,"MUTABLE_MISA_C == true"]
         Writing 0 to this field will cause all compressed instructions to raise an `IllegalInstruction` exception.
         Additionally, IALIGN becomes 32.
-        <%- end -%>
       type(): |
         return (implemented?(ExtensionName::C) && MUTABLE_MISA_C) ? CsrFieldType::RW : CsrFieldType::RO;
-      reset_value(): |
-        return implemented?(ExtensionName::C) ? 1 : 0;
+      definedBy: C
+      reset_value: 1
     D:
       location: 3
       description: |
         Indicates support for the `D` (double precision float) extension.
 
-        <%- if MUTABLE_MISA_D -%>
+        [when,"MUTABLE_MISA_D == true"]
+        --
         Writing 0 to this field will cause all double-precision floating point instructions to raise an `IllegalInstruction` exception.
 
         Additionally, the upper 32-bits of the f registers will read as zero.
-        <%- end -%>
+        --
       type(): |
         return (implemented?(ExtensionName::D) && MUTABLE_MISA_D) ? CsrFieldType::RW : CsrFieldType::RO;
-      reset_value(): |
-        return implemented?(ExtensionName::D) ? 1 : 0;
+      definedBy: D
+      reset_value: 1
     F:
       location: 5
       description: |
         Indicates support for the `F` (single precision float) extension.
 
-        <%- if MUTABLE_MISA_F -%>
+        [when,"MUTABLE_MISA_F == true"]
+        --
         Writing 0 to this field will cause all floating point (single and double precision) instructions to raise an `IllegalInstruction` exception.
 
         Writing 0 to this field with `misa.D` set will result in UNDEFINED behavior.
-        <%- end -%>
+        --
       type(): |
         return (implemented?(ExtensionName::F) && MUTABLE_MISA_F) ? CsrFieldType::RW : CsrFieldType::RO;
-      reset_value(): |
-        return implemented?(ExtensionName::F) ? 1 : 0;
+      definedBy: F
+      reset_value: 1
       sw_write(csr_value): |
         if (csr_value.F == 0 && csr_value.D == 1) {
           return UNDEFINED_LEGAL_DETERMINISTIC;
@@ -90,7 +90,7 @@ misa:
     G:
       location: 6
       description: |
-        Indicates support for all of the following extensions: `I`, `A`, `M`, `F`, 'D'.
+        Indicates support for all of the following extensions: `I`, `A`, `M`, `F`, `D`.
       type(): |
         if ((implemented?(ExtensionName::A) && MUTABLE_MISA_A) ||
             (implemented?(ExtensionName::M) && MUTABLE_MISA_M) ||
@@ -111,55 +111,62 @@ misa:
       description: |
         Indicates support for the `H` (hypervisor) extension.
 
-        <%- if MUTABLE_MISA_H -%>
+        [when,"MUTABLE_MISA_H == true"]
         Writing 0 to this field will cause all attempts to enter VS- or VU- mode, execute a hypervisor instruction, or access a hypervisor CSR to raise an `IllegalInstruction` fault.
-        <%- end -%>
       type(): |
         return (implemented?(ExtensionName::H) && MUTABLE_MISA_H) ? CsrFieldType::RW : CsrFieldType::RO;
-      reset_value(): |
-        return implemented?(ExtensionName::H) ? 1 : 0;
+      definedBy: H
+      reset_value: 1
     I:
       location: 8
       description: |
         Indicates support for the `I` (base) extension.
       type: RO
+      definedBy: I
       reset_value: 1
     M:
       location: 13
       description: |
         Indicates support for the `M` (integer multiply/divide) extension.
 
-        <%- if MUTABLE_MISA_M -%>
+        [when,"MUTABLE_MISA_M == true"]
         Writing 0 to this field will cause all attempts to execute an integer multiply or divide instruction to raise an `IllegalInstruction` exception.
-        <%- end -%>
       type(): |
         return (implemented?(ExtensionName::M) && MUTABLE_MISA_M) ? CsrFieldType::RW : CsrFieldType::RO;
-      reset_value(): |
-        return implemented?(ExtensionName::M) ? 1 : 0;
+      definedBy: M
+      reset_value: 1
     S:
       location: 19
       description: |
         Indicates support for the `S` (supervisor mode) extension.
+
+        [when,"MUTABLE_MISA_S == true"]
+        Writing 0 to this field will cause all attempts to enter S-mode or access S-mode state to raise an exception.
       type(): |
         return (implemented?(ExtensionName::S) && MUTABLE_MISA_S) ? CsrFieldType::RW : CsrFieldType::RO;
-      reset_value(): |
-        return implemented?(ExtensionName::S) ? 1 : 0;
+      definedBy: S
+      reset_value: 1
     U:
       location: 21
       description: |
         Indicates support for the `U` (user mode) extension.
+
+        [when,"MUTABLE_MISA_U == true"]
+        Writing 0 to this field will cause all attempts to enter U-mode to raise an exception.
       type(): |
         return (implemented?(ExtensionName::U) && MUTABLE_MISA_U) ? CsrFieldType::RW : CsrFieldType::RO;
-      reset_value(): |
-        return implemented?(ExtensionName::U) ? 1 : 0;
+      definedBy: U
+      reset_value: 1
     V:
       location: 22
       description: |
         Indicates support for the `V` (vector) extension.
+
+        [when,"MUTABLE_MISA_V == true"]
+        Writing 0 to this field will cause all attempts to execute a vector instruction to raise an `IllegalInstruction` trap.
       type: RO
-      reset_value: 0 # TODO
-      # reset_value(): |
-      #   return implemented?(ExtensionName::V) ? 1 : 0;
+      definedBy: V
+      reset_value: 1
   sw_read(): |
     return (
       (CSR[misa].MXL << 62) |

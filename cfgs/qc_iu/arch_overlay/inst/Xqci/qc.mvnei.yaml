@@ -5,8 +5,9 @@ qc.mvnei:
   description: |
     Move `rs3` to `rd` if the value in `rs1` is not equal to value `imm`
   definedBy:
-  - Xqci
-  - Xqcicm
+    anyOf:
+    - Xqci
+    - Xqcicm
   base: 32
   encoding:
     match:     -----10----------001-----1011011

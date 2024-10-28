@@ -24,7 +24,7 @@ params:
 
   MISALIGNED_LDST_EXCEPTION_PRIORITY: high
 
-  MAX_MISALIGNED_ATOMICITY_GRANULE_SIZE: 0
+  MISALIGNED_MAX_ATOMICITY_GRANULE_SIZE: 0
 
   MISALIGNED_SPLIT_STRATEGY: by_byte
 
@@ -234,7 +234,15 @@ params:
   # when false, writing an illegal value to a WLRL CSR field is ignored
   TRAP_ON_ILLEGAL_WLRL: true
   TRAP_ON_UNIMPLEMENTED_INSTRUCTION: true
+  TRAP_ON_RESERVED_INSTRUCTION: true
   TRAP_ON_UNIMPLEMENTED_CSR: true
+
+  # Whether or not a real hardware `time` CSR exists. Implementations can either provide a real
+  # CSR or trap and emulate access at M-mode.
+  TIME_CSR_IMPLEMENTED: true
+
+  # Whether or not the `misa` CSR returns zero or a non-zero value.
+  MISA_CSR_IMPLEMENTED: true
 
   # when true, *tval is written with the virtual PC of the EBREAK instruction (same information as *epc)
   # when false, *tval is written with 0 on an EBREAK instruction
@@ -364,6 +372,10 @@ params:
   # the extension can be disabled in the `misa.U` bit.
   MUTABLE_MISA_U: false
 
+  # when the V extensions is supported, indicates whether or not
+  # the extension can be disabled in the `misa.V` bit.
+  MUTABLE_MISA_V: false
+
   # size of a cache block, in bytes
   CACHE_BLOCK_SIZE: 64
 
@@ -458,4 +470,48 @@ params:
   # (independent of whether or not the SC is in the current reservation set)
   LRSC_FAIL_ON_NON_EXACT_LRSC: false
 
+  # Whether writes from M-mode, U-mode, or S-mode to vsatp with an illegal mode setting are
+  # ignored (as they are with satp), or if they are treated as WARL, leading to undpredictable
+  # behavior.
+  IGNORE_INVALID_VSATP_MODE_WRITES_WHEN_V_EQ_ZERO: true
 
+  GSTAGE_MODE_BARE: true
+  SV32_VSMODE_TRANSLATION: false
+  SV39_VSMODE_TRANSLATION: true
+  SV48_VSMODE_TRANSLATION: true
+  SV57_VSMODE_TRANSLATION: true
+  SV32X4_TRANSLATION: false
+  SV39X4_TRANSLATION: true
+  SV48X4_TRANSLATION: true
+  SV57X4_TRANSLATION: false
+  VMID_WIDTH: 8
+  SV_MODE_BARE: true
+  STVEC_MODE_DIRECT: true
+  STVEC_MODE_VECTORED: true
+  SATP_MODE_BARE: true
+  REPORT_GPA_IN_TVAL_ON_LOAD_GUEST_PAGE_FAULT: true
+  REPORT_GPA_IN_TVAL_ON_STORE_AMO_GUEST_PAGE_FAULT: true
+  REPORT_GPA_IN_TVAL_ON_INSTRUCTION_GUEST_PAGE_FAULT: true
+  REPORT_GPA_IN_TVAL_ON_INTERMEDIATE_GUEST_PAGE_FAULT: true
+  TINST_VALUE_ON_FINAL_LOAD_GUEST_PAGE_FAULT: "always transformed standard instruction"
+  TINST_VALUE_ON_FINAL_STORE_AMO_GUEST_PAGE_FAULT: "always transformed standard instruction"
+  TINST_VALUE_ON_FINAL_INSTRUCTION_GUEST_PAGE_FAULT: "always zero"
+  TINST_VALUE_ON_INSTRUCTION_ADDRESS_MISALIGNED: "always zero"
+  TINST_VALUE_ON_BREAKPOINT: "always zero"
+  TINST_VALUE_ON_VIRTUAL_INSTRUCTION: "always zero"
+  TINST_VALUE_ON_LOAD_ADDRESS_MISALIGNED: "always zero"
+  TINST_VALUE_ON_LOAD_ACCESS_FAULT: "always zero"
+  TINST_VALUE_ON_STORE_AMO_ADDRESS_MISALIGNED: "always zero"
+  TINST_VALUE_ON_STORE_AMO_ACCESS_FAULT: "always zero"
+  TINST_VALUE_ON_UCALL: "always zero"
+  TINST_VALUE_ON_SCALL: "always zero"
+  TINST_VALUE_ON_MCALL: "always zero"
+  TINST_VALUE_ON_VSCALL: "always zero"
+  TINST_VALUE_ON_LOAD_PAGE_FAULT: "always zero"
+  TINST_VALUE_ON_STORE_AMO_PAGE_FAULT: "always zero"
+  MTVEC_MODES: [0, 1]
+  MSTATUS_FS_LEGAL_VALUES: [0,1,2,3]
+  MSTATUS_FS_WRITEABLE: true
+  MSTATUS_TVM_IMPLEMENTED: true
+  HW_MSTATUS_FS_DIRTY_UPDATE: precise
+  ALLOW_CBO_INVAL_UPGRADE_TO_FLUSH: true

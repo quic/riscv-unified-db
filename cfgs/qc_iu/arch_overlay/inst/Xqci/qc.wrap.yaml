@@ -5,10 +5,11 @@ qc.wrap:
   description: |
     If `rs1` >= `rs2` perform subtraction between `rs1` and `rs2`.
     If `rs1` < 0, perform addition between `rs1` and `rs2`,
-    else, select `rs1`. The result is stored in `rd`. 
+    else, select `rs1`. The result is stored in `rd`.
   definedBy:
-  - Xqci
-  - Xqcia
+    anyOf:
+    - Xqci
+    - Xqcia
   base: 32
   encoding:
     match:     0010010----------011-----0001011

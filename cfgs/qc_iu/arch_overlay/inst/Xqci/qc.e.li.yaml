@@ -5,8 +5,9 @@ qc.e.li:
   description: |
     Loads the 32-bit immediate `imm` into `rd`.
   definedBy:
-  - Xqci
-  - Xqcili
+    anyOf:
+    - Xqci
+    - Xqcili
   base: 32
   encoding:
     match:     --------------------------------0000-----0011111

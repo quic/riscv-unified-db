@@ -5,8 +5,9 @@ qc.subusat:
   description: |
     Subtract unsigned values `rs1` and `rs2`, saturate the unsigned result, and write to `rd`.
   definedBy:
-  - Xqci
-  - Xqcia
+    anyOf:
+    - Xqci
+    - Xqcia
   base: 32
   encoding:
     match:     0010001----------011-----0001011

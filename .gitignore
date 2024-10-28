@@ -6,6 +6,10 @@
 .yardoc
 .stamps
 .venv
+.asciidoctor
+diag-ditaa-*
+arch/manual/isa/**/riscv-isa-manual
 gen
 node_modules
 _site
+images

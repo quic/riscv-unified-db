@@ -47,7 +47,8 @@ module Idl
   end
   class StringLiteralAst
     def gen_adoc(indent, indent_spaces: 2)
-      "#{' '*indent}\"#{text_value}\""
+      # text_value will include leading and trailing quotes
+      "#{' '*indent}#{text_value}"
     end
   end
   class DontCareReturnAst
@@ -75,9 +76,14 @@ module Idl
       "#{' '*indent}#{csr.gen_adoc(indent, indent_spaces:)}.sw_write(#{expression.gen_adoc(0, indent_spaces:)})"
     end
   end
-  class BitfieldAccessExpressionAst
+  class FieldAccessExpressionAst
     def gen_adoc(indent, indent_spaces: 2)
-      "#{' '*indent}#{bitfield.gen_adoc(indent, indent_spaces: )}.#{@field_name}"
+      "#{' '*indent}#{obj.gen_adoc(indent, indent_spaces: )}.#{@field_name}"
+    end
+  end
+  class FieldAssignmentAst
+    def gen_adoc(indent, indent_spaces: 2)
+      "#{field_access.gen_adoc(0, indent_spaces:)} = #{write_value.gen_adoc(0, indent_spaces:)}"
     end
   end
   class ConcatenationExpressionAst
@@ -88,6 +94,11 @@ module Idl
   class BitsCastAst
     def gen_adoc(indent, indent_spaces: 2)
       "#{' '*indent}$bits(#{expression.gen_adoc(0, indent_spaces: )})"
+    end
+  end
+  class EnumCastAst
+    def gen_adoc(indent, indent_spaces: 2)
+      "#{' '*indent}$enum(#{enum_name.gen_adoc(0, indent_spaces:)}, #{expression.gen_adoc(0, indent_spaces: )})"
     end
   end
   class CsrFieldAssignmentAst
@@ -209,6 +220,12 @@ module Idl
     end
   end
 
+  class PcAssignmentAst
+    def gen_adoc(indent = 0, indent_spaces: 2)
+      "#{' '*indent}$pc = #{rhs.gen_adoc(0, indent_spaces:)}"
+    end
+  end
+
   class AryElementAssignmentAst
     def gen_adoc(indent = 0, indent_spaces: 2)
       "#{' '*indent}#{lhs.gen_adoc(0, indent_spaces:)}[#{idx.gen_adoc(0, indent_spaces:)}] = #{rhs.gen_adoc(0, indent_spaces:)}"
@@ -254,6 +271,12 @@ module Idl
     end
   end
 
+  class ArraySizeAst
+    def gen_adoc(indent = 0, indent_spaces: 2)
+      "#{' '*indent}$array_size(#{expression.gen_adoc(0, indent_spaces:)})"
+    end
+  end
+
   class FunctionBodyAst
     def gen_adoc(indent = 0, indent_spaces: 2)
       statements.map{ |s| "#{' ' * indent}#{s.gen_adoc(0, indent_spaces:)}" }.join("\n")
@@ -272,7 +295,11 @@ module Idl
       if idx_text =~ /[0-9]+/
         "#{' '*indent}#{csr_text}"
       else
-        "#{' '*indent}%%LINK%csr_field;#{idx_text}.#{@field_name};#{csr_text}%%"
+        if @archdef.csr(csr_text).nil? 
+        "#{' '*indent}#{csr_text}"
+        else
+          "#{' '*indent}%%LINK%csr_field;#{idx_text}.#{@field_name};#{csr_text}%%"
+        end
       end
     end
   end
@@ -291,7 +318,11 @@ module Idl
         # we don't have the symtab to map this to a csr name
         "#{' '*indent}#{csr_text}"
       else
-        "#{' '*indent}%%LINK%csr;#{idx_text};#{csr_text}%%"
+        if @archdef.csr(csr_text).nil?
+          "#{' '*indent}#{csr_text}"
+        else
+          "#{' '*indent}%%LINK%csr;#{idx_text};#{csr_text}%%"
+        end
       end
     end
   end

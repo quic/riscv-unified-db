@@ -5,8 +5,9 @@ qc.bnei:
   description: |
     Branches to `PC` + `offset` if the value in `rs1` is not equal to the signed immediate
   definedBy:
-  - Xqci
-  - Xqcibi
+    anyOf:
+    - Xqci
+    - Xqcibi
   base: 32
   encoding:
     match:     -----------------001-----1111011
@@ -29,5 +30,5 @@ qc.bnei:
     vu: always
   operation(): |
     if ($signed(X[rs1]) != $signed(imm)) {
-      jump_halfword(PC + $signed(offset));
+      jump_halfword($pc + $signed(offset));
     }
