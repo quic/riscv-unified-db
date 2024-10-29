@@ -120,7 +120,7 @@ rule %r{#{$root}/gen/ext_pdf_doc/.*/adoc/.*_extension\.adoc} => proc { |tname|
     end
   raise "Can't find extension '#{ext_name}'" if arch_yaml_paths.empty?
 
-  stamp = config_name == "_" ? "#{$root}/.stamps/arch-gen.stamp" : "#{$root}/.stamps/arch-gen-#{config_name}.stamp"
+  stamp = config_name == "_" ? "#{$root}/.stamps/arch-gen-_64.stamp" : "#{$root}/.stamps/arch-gen-#{config_name}.stamp"
 
   [
     stamp,
