@@ -37,7 +37,7 @@
 :preface-title: Licensing and Acknowledgements
 :colophon:
 :appendix-caption: Appendix
-<%- if ext.company["name"] =~ /RISCV/ -%>
+<%- if !ext.company.nil? && (ext.company["name"] =~ /RISCV/) -%>
 :title-logo-image: image:risc-v_logo.png["RISC-V International Logo",pdfwidth=3.25in,align=center]
 :back-cover-image: image:riscv-horizontal-color.svg[opacity=25%]
 <%- end -%>
@@ -123,7 +123,7 @@ endif::[]
 == Copyright and license information
 This document is released under the <%= ext.doc_license.nil? ? "unknown" : ext.doc_license["url"] %>[<%= ext.doc_license.nil? ? "unknown" : ext.doc_license["name"] %>].
 
-Copyright <%= ext_version["ratification_date"].split("-")[0] %> by <%= ext.company.nil? ? "unknown" : ext.company["name"] %>.
+Copyright <%= ext_version["ratification_date"].nil? ? Date.today.year : ext_version["ratification_date"].split("-")[0] %> by <%= ext.company.nil? ? "unknown" : ext.company["name"] %>.
 
 [preface]
 == Acknowledgements
@@ -208,7 +208,6 @@ The following <%= ext.instructions.size %> instructions are added by this extens
 <%- unless ext.implies.empty? -%>
 === Instructions by sub-extension
 
-[%autowidth]
 |===
 | Mnemonic | `<%= ext.name %>` | <%= ext.implies.map { |e| "`#{e.name}`" }.join(" | ") %>
 
@@ -379,7 +378,6 @@ This CSR may return a value that is different from what is stored in hardware.
 <%- end -%>
 
 <%- unless ext.instructions.empty? -%>
-
 <<<
 [#insns,reftext="Instructions (in alphabetical order)"]
 == Instructions (in alphabetical order)
