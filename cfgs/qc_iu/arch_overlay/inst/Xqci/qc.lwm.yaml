@@ -4,7 +4,8 @@ qc.lwm:
   long_name: Load word multiple
   description: |
     Loads multiple words starting from address (`rs1` + `imm`) to registers, starting from `rd`.
-    The number of words is in `rs2`
+    The number of words is in `rs2`.
+    Instruction encoded in R instruction format.
   definedBy:
   - Xqci
   - Xqcilsm

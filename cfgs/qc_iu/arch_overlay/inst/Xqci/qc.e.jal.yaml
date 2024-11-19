@@ -3,7 +3,8 @@
 qc.e.jal:
   long_name: Jump and link
   description: |
-    Jump to a PC-relative offset and store the return
+    Jump to a PC-relative offset and store the return.
+    Instruction encoded in QC.EJ instruction format.
     address in x1.
   definedBy:
   - Xqci

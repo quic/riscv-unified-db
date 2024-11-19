@@ -3,7 +3,8 @@
 qc.mvgeui:
   long_name: Conditional move if great or equal than unsigned (Immediate)
   description: |
-    Move `rs3` to `rd` if the unsigned value in `rs1` is great or equal than unsigned value of `imm`
+    Move `rs3` to `rd` if the unsigned value in `rs1` is great or equal than unsigned value of `imm`.
+    Instruction encoded in R4 instruction format.
   definedBy:
   - Xqci
   - Xqcicm

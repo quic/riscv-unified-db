@@ -4,6 +4,7 @@ qc.c.setint:
   long_name: Set interrupt (Register)
   description: |
     Set interrupt, interrupt number is in `rs1`.
+    Instruction encoded in CI instruction format.
   definedBy:
   - Xqci
   - Xqciint

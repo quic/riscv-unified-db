@@ -4,7 +4,8 @@ qc.expand2:
   long_name: Bit expansion (every 2nd bit)
   description: |
     Bit expansion (every 2nd bit) of `rs1`, bits [31:16] of `rs1` are ignored.
-    Write result to `rd`. 
+    Write result to `rd`.
+    Instruction encoded in I instruction format.
   definedBy:
   - Xqci
   - Xqcibm

@@ -5,6 +5,7 @@ qc.swmi:
   description: |
     Stores multiple words from the registers starting at `rs3` to the address starting at (`rs1` + `imm`).
     The number of words is in `length` immediate.
+    Instruction encoded in I instruction format.
   definedBy:
   - Xqci
   - Xqcilsm

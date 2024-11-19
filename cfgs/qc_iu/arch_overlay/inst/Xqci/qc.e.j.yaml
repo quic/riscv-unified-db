@@ -3,7 +3,8 @@
 qc.e.j:
   long_name: Jump
   description: |
-    Jump to a PC-relative offset 
+    Jump to a PC-relative offset.
+    Instruction encoded in QC.EJ instruction format.
   definedBy:
   - Xqci
   - Xqcilb

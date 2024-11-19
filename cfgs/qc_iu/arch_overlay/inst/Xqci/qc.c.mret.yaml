@@ -4,6 +4,7 @@ qc.c.mret:
   long_name: Machine Exception Return
   description: |
     Returns from an exception in M-mode.
+    Instruction encoded in CI instruction format.
   assembly: ""
   definedBy: Xqcipr
   access:

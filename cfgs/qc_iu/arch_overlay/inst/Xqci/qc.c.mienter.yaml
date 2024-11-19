@@ -6,6 +6,7 @@ qc.c.mienter:
     Machine mode interrupt enter, interrupt nesting is disabled.
     Interrupt frame is saved in the stack.
     Interrupts are disabled.
+    Instruction encoded in CI instruction format.
   assembly: ""
   definedBy:
   - Xqci

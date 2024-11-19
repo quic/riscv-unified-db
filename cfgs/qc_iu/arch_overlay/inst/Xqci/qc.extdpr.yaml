@@ -6,6 +6,7 @@ qc.extdpr:
     Extract a subset of bits from the register pair [`rs1`, `rs1`+1] into `rd`, and sign extend the result.
     The width of the subset is determined by `rs2` bits [15:8] + 1 (1..32),
     and the offset of the subset is determined by `rs2` bits [7:0].
+    Instruction encoded in R instruction format.
   definedBy:
   - Xqci
   - Xqcibm

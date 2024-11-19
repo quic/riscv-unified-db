@@ -6,6 +6,7 @@ qc.extduprh:
     Extract a subset of bits from the register pair [`rs1`, `rs1`+1] into `rd`.
     The width of the subset is determined by `rs2` bits [31:24] + 1 (1..32),
     and the offset of the subset is determined by `rs2` bits [23:16].
+    Instruction encoded in R instruction format.
   definedBy:
   - Xqci
   - Xqcibm

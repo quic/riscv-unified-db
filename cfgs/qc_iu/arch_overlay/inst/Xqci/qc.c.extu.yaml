@@ -5,6 +5,7 @@ qc.c.extu:
   description: |
     Extract a subset of bits from `rd` starting from LSB.
     The width of the subset is determined by (`width_minus1`[4:0] + 1) (1..32).
+    Instruction encoded in CI instruction format.
   definedBy:
   - Xqci
   - Xqcibm
@@ -15,6 +16,7 @@ qc.c.extu:
     variables:
     - name: width_minus1
       location: 6-2
+      not: [0,1,2,3]
     - name: rd
       location: 11-7
   access:

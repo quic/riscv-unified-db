@@ -4,6 +4,7 @@ qc.c.mveqz:
   long_name: Conditional Move if equal to zero
   description: |
     Move `rs1` to `rd` if `rd` == 0, keep `rd` value otherwise
+    Instruction encoded in CL instruction format.
   definedBy:
   - Xqci
   - Xqcicm

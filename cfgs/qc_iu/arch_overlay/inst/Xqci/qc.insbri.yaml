@@ -6,6 +6,7 @@ qc.insbri:
     Insertion of a subset of bits of an `imm` into `rd`.
     The width of the subset is determined by `rs1` bits [31:16] + 1,
     and the offset of the subset is determined by `rs1` bits [15:0].
+    Instruction encoded in I instruction format.
   definedBy:
   - Xqci
   - Xqcibm

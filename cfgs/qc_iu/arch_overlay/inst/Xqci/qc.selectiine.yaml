@@ -4,7 +4,8 @@ qc.selectiine:
   long_name: Select load immediate if not equal (Register)
   description: |
     Move `simm1` to `rd` if the value in `rd` is not equal to value `rs1`,
-    move `simm2` to `rd` otherwise
+    move `simm2` to `rd` otherwise.
+    Instruction encoded in R4 instruction format.
   definedBy:
   - Xqci
   - Xqcics

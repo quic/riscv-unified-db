@@ -5,6 +5,7 @@ qc.c.dir:
   description: |
     Globally disable interrupts, write previous value of `mstatus` to `rd`.
     Equivalent to "csrrci `rd`, `mstatus`, 8".
+    Instruction encoded in CI instruction format.
   definedBy:
   - Xqci
   - Xqciint

@@ -4,6 +4,7 @@ qc.clrinti:
   long_name: Clear interrupt (Immediate)
   description: |
     Clear interrupt, interrupt number is in `imm` (0 - 1023).
+    Instruction encoded in I instruction format.
   definedBy:
   - Xqci
   - Xqciint

@@ -5,6 +5,7 @@ qc.c.eir:
   description: |
     Globally restore interrupts, write `rs1` to `mstatus`.
     Equivalent to "csrrs `zero`, `mstatus`, `rs1`".
+    Instruction encoded in CI instruction format.
   definedBy:
   - Xqci
   - Xqciint

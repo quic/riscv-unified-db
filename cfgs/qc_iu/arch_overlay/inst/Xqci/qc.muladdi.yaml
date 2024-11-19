@@ -3,7 +3,8 @@
 qc.muladdi:
   long_name: Multiply and accumulate (Immediate)
   description: |
-    Increments `rd` by the multiplication of `rs1` and a signed immediate `imm`
+    Increments `rd` by the multiplication of `rs1` and a signed immediate `imm`.
+    Instruction encoded in I instruction format.
   definedBy:
   - Xqci
   - Xqciac

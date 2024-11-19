@@ -5,7 +5,8 @@ qc.wrap:
   description: |
     If `rs1` >= `rs2` perform subtraction between `rs1` and `rs2`.
     If `rs1` < 0, perform addition between `rs1` and `rs2`,
-    else, select `rs1`. The result is stored in `rd`. 
+    else, select `rs1`. The result is stored in `rd`.
+    Instruction encoded in R instruction format.
   definedBy:
   - Xqci
   - Xqcia

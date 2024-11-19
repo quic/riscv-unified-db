@@ -5,6 +5,7 @@ qc.swm:
   description: |
     Stores multiple words from the registers starting at `rs3` to the address starting at (`rs1` + `imm`).
     The number of words is in `rs2`.
+    Instruction encoded in R instruction format.
   definedBy:
   - Xqci
   - Xqcilsm

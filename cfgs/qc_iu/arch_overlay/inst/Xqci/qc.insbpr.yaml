@@ -6,6 +6,7 @@ qc.insbpr:
     Insertion of a subset of bits from `rs1` into `rd`.
     The width of the subset is determined by `rs2` bits [15:8] + 1 (1..32),
     and the offset of the subset is determined by `rs2` bits [7:0].
+    Instruction encoded in R instruction format.
   definedBy:
   - Xqci
   - Xqcibm

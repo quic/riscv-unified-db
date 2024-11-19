@@ -4,6 +4,7 @@ qc.c.clrint:
   long_name: Clear interrupt (Register)
   description: |
     Clear interrupt, interrupt number is in `rs1`.
+    Instruction encoded in CI instruction format.
   definedBy:
   - Xqci
   - Xqciint

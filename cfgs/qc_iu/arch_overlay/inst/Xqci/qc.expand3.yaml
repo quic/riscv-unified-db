@@ -4,7 +4,8 @@ qc.expand3:
   long_name: Bit expansion (every 3rd bit)
   description: |
     Bit expansion (every 3rd bit) of `rs1`, bits [31:11] of `rs1` are ignored.
-    Write result to `rd`. 
+    Write result to `rd`.
+    Instruction encoded in I instruction format.
   definedBy:
   - Xqci
   - Xqcibm

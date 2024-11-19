@@ -4,6 +4,7 @@ qc.c.mnret:
   long_name: Machine NMI Return
   description: |
     Returns from an NMI in M-mode.
+    Instruction encoded in CI instruction format.
   assembly: ""
   definedBy: Xqcipr
   access:

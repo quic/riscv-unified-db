@@ -4,6 +4,7 @@ qc.e.xorai:
   long_name: Exclusive Or immediate
   description: |
     Exclusive or a 32-bit immediate `imm` to the value in `rd`, and store the result back in `rd`.
+    Instruction encoded in QC.EAI instruction format.
   definedBy:
   - Xqci
   - Xqcilia
