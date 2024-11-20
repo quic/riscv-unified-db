@@ -5,6 +5,7 @@ qc.compress3:
   description: |
     Bit compression (every 3rd bit) of `rs1`, zero-pad bits [31:11] of the result.
     Write result to `rd`.
+    Instruction encoded in I instruction format.
   definedBy:
     anyOf:
     - Xqci

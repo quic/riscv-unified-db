@@ -4,6 +4,7 @@ qc.c.mienter.nest:
     Machine mode interrupt enter, interrupt nesting is enabled.
     Interrupt frame is saved in the stack.
     Interrupts are enabled.
+    Instruction encoded in CI instruction format.
   assembly: ""
   definedBy:
     anyOf:

@@ -3,7 +3,8 @@
 qc.lieq:
   long_name: Conditional load immediate if equal (Register)
   description: |
-    Move `simm` to `rd` if the value in `rs1` is equal to value `rs2`
+    Move `simm` to `rd` if the value in `rs1` is equal to value `rs2`.
+    Instruction encoded in R instruction format.
   definedBy:
     anyOf:
     - Xqci

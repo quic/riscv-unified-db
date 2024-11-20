@@ -4,6 +4,7 @@ qc.shladd:
   long_name: Shift left and add (immediate)
   description: |
     Left shift _rs1_ by _shamt_ and add the value in _rs2_.
+    Instruction encoded in R instruction format.
   definedBy:
     anyOf:
     - name: Xqci
@@ -15,7 +16,7 @@ qc.shladd:
     variables:
     - name: shamt
       location: 29-25
-      left_shift: 3
+      not: [0,1,2,3]
     - name: rs2
       location: 24-20
       not: 0

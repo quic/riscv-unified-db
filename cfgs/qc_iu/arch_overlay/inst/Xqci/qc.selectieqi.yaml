@@ -4,7 +4,8 @@ qc.selectieqi:
   long_name: Select load immediate or register if equal (Immediate)
   description: |
     Move `rs2` to `rd` if the value in `rd` is equal to value `imm`,
-    move `simm2` to `rd` otherwise
+    move `simm2` to `rd` otherwise.
+    Instruction encoded in R4 instruction format.
   definedBy:
     anyOf:
     - Xqci

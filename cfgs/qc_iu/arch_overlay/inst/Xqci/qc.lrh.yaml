@@ -6,6 +6,7 @@ qc.lrh:
     Load 16 bits of data into register `rd` from an
     address formed by adding `rs1` to `rs2`, shifted by `shamt`.
     Sign extend the result.
+    Instruction encoded in R instruction format.
   definedBy:
     anyOf:
     - Xqci

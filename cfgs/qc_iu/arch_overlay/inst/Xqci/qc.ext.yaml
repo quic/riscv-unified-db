@@ -6,6 +6,7 @@ qc.ext:
     Extract a subset of bits from `rs1` into `rd`, and sign-extend the result.
     The width of the subset is determined by (`width_minus1` + 1) (1..32),
     and the offset of the subset is determined by `shamt`.
+    Instruction encoded in I instruction format.
   definedBy:
     anyOf:
     - Xqci

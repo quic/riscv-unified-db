@@ -3,7 +3,8 @@
 qc.liltu:
   long_name: Conditional load immediate if less than unsigned (Register)
   description: |
-    Move `simm` to `rd` if the unsigned value in `rs1` is less than unsigned value `rs2`
+    Move `simm` to `rd` if the unsigned value in `rs1` is less than unsigned value `rs2`.
+    Instruction encoded in R instruction format.
   definedBy:
     anyOf:
     - Xqci

@@ -5,6 +5,7 @@ qc.lrw:
   description: |
     Load 32 bits of data into register `rd` from an
     address formed by adding `rs1` to `rs2`, shifted by `shamt`.
+    Instruction encoded in R instruction format.
   definedBy:
     anyOf:
     - Xqci

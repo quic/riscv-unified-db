@@ -3,7 +3,8 @@
 qc.ligeui:
   long_name: Conditional load immediate if great or equal than unsigned (Immediate)
   description: |
-    Move `simm` to `rd` if the unsigned value in `rs1` is great or equal than unsigned value `imm`
+    Move `simm` to `rd` if the unsigned value in `rs1` is great or equal than unsigned value `imm`.
+    Instruction encoded in I instruction format.
   definedBy:
     anyOf:
     - Xqci

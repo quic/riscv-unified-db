@@ -14,6 +14,18 @@ Xqcisls:
     - name: Derek Hower
       company: Qualcomm Technologies, Inc.
       email: dhower@qti.qualcomm.com
+  - version: "0.2.0"
+    state: frozen
+    ratification_date: null
+    contributors:
+    - name: Albert Yosher
+      company: Qualcomm Technologies, Inc.
+      email: ayosher@qti.qualcomm.com
+    - name: Derek Hower
+      company: Qualcomm Technologies, Inc.
+      email: dhower@qti.qualcomm.com
+    changes:
+      - Add information about instruction formats of each instruction
   description: |
     The Xqsls extension includes five load and three store instructions with a scaled index addressing mode.
 

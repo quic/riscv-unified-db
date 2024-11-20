@@ -4,6 +4,7 @@ qc.e.li:
   long_name: Load immediate large
   description: |
     Loads the 32-bit immediate `imm` into `rd`.
+    Instruction encoded in QC.EAI instruction format.
   definedBy:
     anyOf:
     - Xqci

@@ -5,6 +5,7 @@ qc.setwm:
   description: |
     Stores the value of `rs3` multiple times into the address starting at (`rs1` + `imm`).
     The number of writes is in `rs2`.
+    Instruction encoded in R instruction format.
   definedBy:
     anyOf:
     - Xqci
