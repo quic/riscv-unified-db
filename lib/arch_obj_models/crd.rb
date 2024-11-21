@@ -267,7 +267,7 @@ class Crd < ArchDefObject
         raise "There is no param '#{param_name}' in extension '#{ext_crd["name"]}" if param_db.nil?
 
         next unless ext_db.versions.any? do |ver|
-          Gem::Requirement.new(ext_crd["version"]).satisfied_by?(Gem::Version.new(ver["version"])) &&
+          Gem::Requirement.new(ext_crd["version"]).satisfied_by?(ver.version) &&
             param_db.defined_in_extension_version?(ver["version"])
         end
 
@@ -301,7 +301,7 @@ class Crd < ArchDefObject
         raise "There is no param '#{param_name}' in extension '#{ext_crd["name"]}" if ext_param_db.nil?
 
         next unless ext_db.versions.any? do |ver|
-          Gem::Requirement.new(ext_crd["version"]).satisfied_by?(Gem::Version.new(ver["version"])) &&
+          Gem::Requirement.new(ext_crd["version"]).satisfied_by?(ver.version) &&
             ext_param_db.defined_in_extension_version?(ver["version"])
         end
 
@@ -323,8 +323,8 @@ class Crd < ArchDefObject
         next if all_in_scope_ext_params.any? { |c| c.param_db.name == param_db.name }
 
         next unless ext_db.versions.any? do |ver|
-          Gem::Requirement.new(ext_req.version_requirement).satisfied_by?(Gem::Version.new(ver["version"])) &&
-            param_db.defined_in_extension_version?(ver["version"])
+          Gem::Requirement.new(ext_req.version_requirement).satisfied_by?(ver.version) &&
+            param_db.defined_in_extension_version?(ver.version)
         end
 
         @all_out_of_scope_params << param_db
