@@ -2,6 +2,7 @@ qc_flags:
   long_name: Flags register (Condition Code Register + co-processor flags)
   address: 0x803
   priv_mode: M
+  base: 32
   length: 32
   description: |
     Condition Code Register with condition codes, plus a co-processor flags (_e.g._, to support floating point)

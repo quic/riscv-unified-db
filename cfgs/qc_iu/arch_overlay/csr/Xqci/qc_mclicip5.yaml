@@ -5,6 +5,7 @@ qc_mclicip5:
   address: 0x7f5
   length: 32
   priv_mode: M
+  base: 32
   definedBy: Xqci
   description: |
     Pending bits for IRQs 160-191

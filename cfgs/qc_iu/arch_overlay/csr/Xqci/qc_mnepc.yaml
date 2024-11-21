@@ -1,6 +1,7 @@
 qc_mnepc:
   long_name: Machine Non-maskable Exception Program Counter
   address: 0x7c1
+  base: 32
   priv_mode: M
   length: MXLEN
   description: |

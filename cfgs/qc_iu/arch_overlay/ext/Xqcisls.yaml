@@ -27,7 +27,7 @@ Xqcisls:
     changes:
       - Add information about instruction formats of each instruction
   description: |
-    The Xqsls extension includes five load and three store instructions with a scaled index addressing mode.
+    The Xqcisls extension includes five load and three store instructions with a scaled index addressing mode.
 
   doc_license:
     name: Creative Commons Attribution 4.0 International License
