@@ -4,6 +4,7 @@ qc.e.addai:
   long_name: Add immediate
   description: |
     Add a 32-bit immediate `imm` to the value in `rd`, and store the result back in `rd`.
+    Instruction encoded in QC.EAI instruction format.
   definedBy:
     anyOf:
     - Xqci

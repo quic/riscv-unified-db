@@ -7,6 +7,7 @@ qc.normu:
     Exponent written in bits[7:0] of the result.
     Mantissa written in bits[31:8] of the result.
     Write result to `rd`.
+    Instruction encoded in I instruction format.
   definedBy:
     anyOf:
     - Xqci

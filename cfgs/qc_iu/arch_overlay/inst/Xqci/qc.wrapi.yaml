@@ -6,6 +6,7 @@ qc.wrapi:
     If `rs1` >= `imm` perform subtraction between `rs1` and `imm`.
     If `rs1` < 0, perform addition between `rs1` and `imm`,
     else, select `rs1`. The result is stored in `rd`.
+    Instruction encoded in I instruction format.
   definedBy:
     anyOf:
     - Xqci

@@ -14,6 +14,19 @@ Xqcilia:
     - name: Derek Hower
       company: Qualcomm Technologies, Inc.
       email: dhower@qti.qualcomm.com
+  - version: "0.2.0"
+    state: frozen
+    ratification_date: null
+    contributors:
+    - name: Albert Yosher
+      company: Qualcomm Technologies, Inc.
+      email: ayosher@qti.qualcomm.com
+    - name: Derek Hower
+      company: Qualcomm Technologies, Inc.
+      email: dhower@qti.qualcomm.com
+    changes:
+      - Add information about instruction formats of each instruction
+    requires: { name: Zca, version: ">= 1.0.0" }
   description: |
     The Xqcilia extension includes eight 48-bit instructions that perform arithmetic using
     large immediates.

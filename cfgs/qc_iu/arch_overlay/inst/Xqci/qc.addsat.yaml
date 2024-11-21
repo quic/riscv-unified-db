@@ -4,6 +4,7 @@ qc.addsat:
   long_name: Saturating signed addition
   description: |
     Add signed values `rs1` and `rs2`, saturate the signed result, and write to `rd`.
+    Instruction encoded in R instruction format
   definedBy:
     anyOf:
     - Xqci

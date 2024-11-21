@@ -3,7 +3,8 @@
 qc.brev32:
   long_name: Reverse bit order
   description: |
-    Reverses the bit order of `rs1` and writes the result to `rd`
+    Reverses the bit order of `rs1` and writes the result to `rd`.
+    Instruction encoded in I instruction format
   definedBy:
     anyOf:
     - Xqci

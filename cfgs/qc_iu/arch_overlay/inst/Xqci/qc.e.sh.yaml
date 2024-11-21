@@ -5,6 +5,7 @@ qc.e.sh:
   description: |
     Store 16 bits of data from register `rs2` to an
     address formed by adding `rs1` to a signed offset `imm`.
+    Instruction encoded in QC.ES instruction format.
   definedBy:
     anyOf:
     - Xqci

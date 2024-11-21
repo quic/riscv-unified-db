@@ -5,6 +5,7 @@ qc.e.addi:
   description: |
     Add a sign-extended 26-bit immediate `imm` to the value in `rs1`,
     and store the result in `rd`.
+    Instruction encoded in QC.EI instruction format.
   definedBy:
     anyOf:
     - Xqci

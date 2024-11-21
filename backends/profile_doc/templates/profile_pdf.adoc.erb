@@ -416,12 +416,12 @@ Version<%= ext_req.version_requirement %>
 
 .Status
 |===
-| Profile | v<%= ext.versions.map { |v| v["version"] }.join(" | v") %>
+| Profile | v<%= ext.versions.map { |v| v.version }.join(" | v") %>
 
 <%- profile_family.profiles.each do |profile| -%>
 | <%= profile.marketing_name %> | <%= ext.versions.map do |v|
-  mandatory = profile.mandatory_extension_requirements.any? { |req| req.satisfied_by?(ext.name, v["version"]) }
-  optional = profile.optional_extension_requirements.any? { |req| req.satisfied_by?(ext.name, v["version"]) }
+  mandatory = profile.mandatory_extension_requirements.any? { |req| req.satisfied_by?(ext.name, v.version) }
+  optional = profile.optional_extension_requirements.any? { |req| req.satisfied_by?(ext.name, v.version) }
   if mandatory
     "mandatory"
   elsif optional
@@ -435,26 +435,25 @@ end.join(" | ") -%>
 |===
 
 <%- ext.versions.each do |v| -%>
-<%= v["version"] %>::
+<%= v.version %>::
   Ratification date:::
-    <%= v["ratification_date"] %>
-  <%- if v.key?("changes") -%>
+    <%= v.ratification_date %>
+  <%- unless v.changes.empty? -%>
   Changes:::
 
-    <%- v["changes"].each do |c| -%>
+    <%- v.changes.each do |c| -%>
     * <%= c %>  
     <%- end -%>
 
   <%- end -%>
-  <%- if v.key?("url") -%>
+  <%- unless v.url.nil? -%>
   Ratification document:::
-    <%= v["url"] %>
+    <%= v.url %>
   <%- end -%>
-  <%- if v.key?("implies") -%>
+  <%- unless v.implications -%>
   Implies:::
-    <%- implications = v["implies"][0].is_a?(Array) ? v["implies"] : [v["implies"]] -%>
-    <%- implications.each do |i| -%>
-    * `<%= i[0] %>` version <%= i[1] %>
+    <%- v.implications.each do |i| -%>
+    * `<%= i.name %>` version <%= i.version %>
     <%- end -%>
   <%- end -%>
 <%- end -%>

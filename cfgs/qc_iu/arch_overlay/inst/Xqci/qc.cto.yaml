@@ -7,7 +7,8 @@ qc.cto:
     and progressing to the MSB.
     Accordingly, if the input is ~0, the output is XLEN, and if the least-significant
     bit of the input is a 0, the output is 0.
-    Output written to `rd`
+    Output written to `rd`.
+    Instruction encoded in I instruction format.
   definedBy:
     anyOf:
     - Xqci

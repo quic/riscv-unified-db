@@ -5,6 +5,7 @@ qc.c.ei:
   description: |
     Globally enable interrupts.
     Equivalent to "csrrsi `zero`, `mstatus`, 8".
+    Instruction encoded in CI instruction format.
   definedBy:
     anyOf:
     - Xqci

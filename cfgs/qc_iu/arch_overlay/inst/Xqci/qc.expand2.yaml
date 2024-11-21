@@ -5,6 +5,7 @@ qc.expand2:
   description: |
     Bit expansion (every 2nd bit) of `rs1`, bits [31:16] of `rs1` are ignored.
     Write result to `rd`.
+    Instruction encoded in I instruction format.
   definedBy:
     anyOf:
     - Xqci

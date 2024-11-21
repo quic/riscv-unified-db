@@ -5,6 +5,7 @@ qc.c.mileaveret:
   description: |
     Machine mode interrupt exit.
     Interrupt frame is restored from the stack.
+    Instruction encoded in CI instruction format.
   assembly: ""
   definedBy:
     anyOf:

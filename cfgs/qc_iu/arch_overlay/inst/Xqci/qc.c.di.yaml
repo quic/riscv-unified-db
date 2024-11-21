@@ -5,6 +5,7 @@ qc.c.di:
   description: |
     Globally disable interrupts.
     Equivalent to "csrrci `zero`, `mstatus`, 8".
+    Instruction encoded in CI instruction format.
   definedBy:
     anyOf:
     - Xqci

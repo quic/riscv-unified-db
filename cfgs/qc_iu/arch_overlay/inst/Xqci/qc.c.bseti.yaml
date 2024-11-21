@@ -5,6 +5,7 @@ qc.c.bseti:
   description: |
     This instruction returns `rd` with a single bit set at the index specified in shamt.
     The index is read from the lower log2(XLEN) bits of `shamt`.
+    Instruction encoded in CB instruction format.
   definedBy:
     anyOf:
     - Xqci

@@ -7,6 +7,7 @@ qc.normeu:
     Even exponent written in bits[7:0] of the result.
     Mantissa (based on even exponent) written in bits[31:8] of the result.
     Write result to `rd`.
+    Instruction encoded in I instruction format.
   definedBy:
     anyOf:
     - Xqci
