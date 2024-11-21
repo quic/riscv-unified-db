@@ -27,6 +27,7 @@ Xqciac:
     changes:
       - Add information about instruction formats of each instruction
       - Fix description and functionality of qc.shladd instruction
+    requires: { name: Zca, version: ">= 1.0.0" }
   description: |
     The Xqciac extension includes three instructions to accelerate common
     address calculations.

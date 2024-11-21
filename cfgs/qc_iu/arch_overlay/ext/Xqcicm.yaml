@@ -26,6 +26,7 @@ Xqcicm:
       email: dhower@qti.qualcomm.com
     changes:
       - Add information about instruction formats of each instruction
+    requires: { name: Zca, version: ">= 1.0.0" }
   description: |
     The Xqcicm extension includes thirteen conditional move instructions.
 

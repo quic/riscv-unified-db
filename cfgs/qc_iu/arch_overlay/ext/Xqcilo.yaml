@@ -26,6 +26,7 @@ Xqcilo:
       email: dhower@qti.qualcomm.com
     changes:
       - Add information about instruction formats of each instruction
+    requires: { name: Zca, version: ">= 1.0.0" }
   description: |
     The Xqcilo extension includes eight 48-bit load/stores instructions that use an offset
     larger than can be found in the base RISC-V ISA.

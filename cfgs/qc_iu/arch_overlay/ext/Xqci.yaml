@@ -87,6 +87,9 @@ Xqci:
     - [Xqcilo, "0.2.0"]
     - [Xqcilsm, "0.2.0"]
     - [Xqcisls, "0.2.0"]
+    requires:
+      name: Zca
+      version: ">= 1.0.0"
   description: |
     The Xqci extension includes a set of instructions that improve RISC-V code density and
     performance in microontrollers. It fills several gaps:

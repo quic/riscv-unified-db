@@ -27,6 +27,7 @@ Xqcibm:
     changes:
       - Add information about instruction formats of each instruction
       - Fix description and functionality of qc.c.extu instruction
+    requires: { name: Zca, version: ">= 1.0.0" }
   description: |
     The Xqcibm extension includes thirty eight instructions that perform bit manipulation,
     include insertion and extraction.
