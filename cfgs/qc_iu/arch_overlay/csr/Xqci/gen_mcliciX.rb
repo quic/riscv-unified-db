@@ -9,6 +9,7 @@ pend_template = <<~YAML
     address: 0x<%= (0x7f0 + num).to_s(16) %>
     length: 32
     priv_mode: M
+    base: 32
     definedBy: Xqci
     description: |
       Pending bits for IRQs <%= num*32 %>-<%= (num + 1)*32 - 1 %>
@@ -29,6 +30,7 @@ en_template = <<~YAML
     long_name: IRQ Enable <%= num %>
     address: 0x<%= (0x7f0 + num).to_s(16) %>
     length: 32
+    base: 32
     priv_mode: M
     definedBy: Xqci
     description: |

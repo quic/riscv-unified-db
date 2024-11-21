@@ -4,6 +4,7 @@ qc_mclicie3:
   long_name: IRQ Enable 3
   address: 0x7f3
   length: 32
+  base: 32
   priv_mode: M
   definedBy: Xqci
   description: |
