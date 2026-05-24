@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 
 # Define the instructions manual generation directory constant.
@@ -16,17 +17,18 @@ end
 
 # File task that generates the merged instructions adoc.
 file MERGED_INSTRUCTIONS_FILE.to_s => [__FILE__, TEMPLATE_FILE.to_s] do |t|
-  cfg_arch = cfg_arch_for("_")
+  cfg_arch = $resolver.cfg_arch_for("_")
   instructions = cfg_arch.possible_instructions
 
   # Load and process the template (which renders both an index and details).
   erb = ERB.new(File.read(TEMPLATE_FILE), trim_mode: "-")
   erb.filename = TEMPLATE_FILE.to_s
 
+  Udb.logger.info "Generating asciidoc for instruction appendix"
   FileUtils.mkdir_p(File.dirname(t.name))
   File.write(
     t.name,
-    AntoraUtils.resolve_links(cfg_arch.convert_monospace_to_links(erb.result(binding)))
+    Udb::Helpers::AntoraUtils.resolve_links(cfg_arch.convert_monospace_to_links(erb.result(binding)))
   )
 end
 
@@ -53,6 +55,9 @@ file MERGED_INSTRUCTIONS_PDF.to_s => [
 end
 
 namespace :gen do
+  desc <<~DESC
+    Generate the instruction appendix (merged .adoc)
+  DESC
   task instruction_appendix_adoc: MERGED_INSTRUCTIONS_FILE.to_s
 
   desc <<~DESC
@@ -90,7 +95,7 @@ namespace :test do
     files = {
       golden: {
         file: Tempfile.new("golden"),
-        path: "#{File.dirname(__FILE__)}/all_instructions.golden.adoc"
+        path: "#{$root}/tests/golden/all_instructions.golden.adoc"
       },
       output: {
         file: Tempfile.new("output"),
@@ -115,8 +120,8 @@ namespace :test do
       warn <<~MSG
         The golden output for the instruction appendix has changed. If this is expected, run
 
-        cp gen/instructions_appendix/all_instructions.adoc backends/instructions_appendix/all_instructions.golden.adoc
-        git add backends/instructions_appendix/all_instructions.golden.adoc
+        cp gen/instructions_appendix/all_instructions.adoc tests/golden/all_instructions.golden.adoc
+        git add tests/golden/all_instructions.golden.adoc
 
         And commit
       MSG

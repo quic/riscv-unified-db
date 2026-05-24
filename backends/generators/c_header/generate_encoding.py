@@ -3,22 +3,21 @@
 Generator script for C encoding header.
 This script uses the existing generator.py functions to create encoding.h.
 """
+
+import argparse
+import logging
 import os
 import sys
-import logging
-import argparse
-import yaml
 
 # Add parent directory to path to import generator.py
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(parent_dir)
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import functions from generator.py
 from generator import (
-    load_instructions,
     load_csrs,
+    load_exception_codes,
+    load_instructions,
     parse_match,
-    parse_extension_requirements,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:: %(message)s")
@@ -27,82 +26,6 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s:: %(message)s")
 def calculate_mask(match_str):
     """Convert the bit pattern string to a mask (1 for fixed bits, 0 for variable bits)."""
     return int("".join("0" if c == "-" else "1" for c in match_str), 2)
-
-
-def load_exception_codes(ext_dir, enabled_extensions=None, include_all=False):
-    """Load exception codes from extension YAML files."""
-    exception_codes = []
-    found_extensions = 0
-    found_files = 0
-
-    if enabled_extensions is None:
-        enabled_extensions = []
-
-    for dirpath, _, filenames in os.walk(ext_dir):
-        for fname in filenames:
-            if not fname.endswith(".yaml"):
-                continue
-
-            found_files += 1
-            path = os.path.join(dirpath, fname)
-
-            try:
-                with open(path, encoding="utf-8") as f:
-                    data = yaml.safe_load(f)
-
-                if not isinstance(data, dict) or data.get("kind") != "extension":
-                    continue
-
-                found_extensions += 1
-                ext_name = data.get("name", "unnamed")
-
-                # Skip extension filtering if include_all is True
-                if not include_all:
-                    # Filter by extension requirements
-                    definedBy = data.get("definedBy")
-                    if definedBy:
-                        meets_req = parse_extension_requirements(definedBy)
-                        if not meets_req(enabled_extensions):
-                            continue
-
-                    # Check if excluded
-                    excludedBy = data.get("excludedBy")
-                    if excludedBy:
-                        exclusion_check = parse_extension_requirements(excludedBy)
-                        if exclusion_check(enabled_extensions):
-                            continue
-
-                # Get exception codes
-                for code in data.get("exception_codes", []):
-                    num = code.get("num")
-                    name = code.get("name")
-
-                    if num is not None and name is not None:
-                        sanitized_name = (
-                            name.lower().replace(" ", "_").replace("/", "_")
-                        )
-                        exception_codes.append((num, sanitized_name))
-
-            except Exception as e:
-                logging.error(f"Error processing file {path}: {e}")
-
-    if found_extensions > 0:
-        logging.info(
-            f"Found {found_extensions} extension definitions in {found_files} files"
-        )
-        logging.info(f"Added {len(exception_codes)} exception codes to the output")
-    else:
-        logging.warning(f"No extension definitions found in {ext_dir}")
-
-    # Sort by exception code number and deduplicate
-    seen_nums = set()
-    unique_codes = []
-    for num, name in sorted(exception_codes, key=lambda x: x[0]):
-        if num not in seen_nums:
-            seen_nums.add(num)
-            unique_codes.append((num, name))
-
-    return unique_codes
 
 
 def extract_instruction_fields(instructions):
@@ -169,7 +92,7 @@ def extract_instruction_fields(instructions):
         }
 
     # Then process fields from actual instructions
-    for name, instr_data in instructions.items():
+    for _name, instr_data in instructions.items():
         # Get variables from the instruction structure
         variables = []
         if "encoding" in instr_data:
@@ -218,9 +141,7 @@ def extract_instruction_fields(instructions):
                         "mask": f"0x{mask:x}",
                         "source": "instruction",
                         "original_name": (
-                            orig_field_name
-                            if orig_field_name != std_field_name
-                            else None
+                            orig_field_name if orig_field_name != std_field_name else None
                         ),
                     }
                 except ValueError:
@@ -236,9 +157,7 @@ def extract_instruction_fields(instructions):
                         "mask": f"0x{mask:x}",
                         "source": "instruction",
                         "original_name": (
-                            orig_field_name
-                            if orig_field_name != std_field_name
-                            else None
+                            orig_field_name if orig_field_name != std_field_name else None
                         ),
                     }
                 except ValueError:
@@ -279,9 +198,7 @@ def main():
         action="store_true",
         help="Include all instructions, ignoring extension filtering",
     )
-    parser.add_argument(
-        "--debug", "-d", action="store_true", help="Enable debug logging"
-    )
+    parser.add_argument("--debug", "-d", action="store_true", help="Enable debug logging")
     parser.add_argument(
         "--extensions",
         "-e",
@@ -294,6 +211,10 @@ def main():
         "-f",
         action="store_true",
         help="Fallback to hardcoded exception causes if none are loaded from files",
+    )
+    parser.add_argument(
+        "--resolved-codes",
+        help="JSON file containing pre-resolved exception codes",
     )
 
     args = parser.parse_args()
@@ -318,7 +239,10 @@ def main():
     # Load exception codes
     logging.info(f"Loading exception codes from {args.ext_dir}")
     causes = load_exception_codes(
-        args.ext_dir, args.extensions, include_all=args.include_all
+        args.ext_dir,
+        args.extensions,
+        include_all=args.include_all,
+        resolved_codes_file=args.resolved_codes,
     )
 
     # Process instructions and calculate masks
@@ -347,22 +271,20 @@ def main():
     # Generate output strings
     mask_match_str = ""
     for i in sorted(instr_dict.keys()):
-        mask_match_str += (
-            f'#define MATCH_{i.upper().replace(".","_")} {instr_dict[i]["match"]}\n'
-        )
-        mask_match_str += (
-            f'#define MASK_{i.upper().replace(".","_")} {instr_dict[i]["mask"]}\n'
-        )
+        mask_match_str += f"#define MATCH_{i.upper().replace('.', '_')} {instr_dict[i]['match']}\n"
+        mask_match_str += f"#define MASK_{i.upper().replace('.', '_')} {instr_dict[i]['mask']}\n"
 
     declare_insn_str = ""
     for i in sorted(instr_dict.keys()):
-        declare_insn_str += f'DECLARE_INSN({i.replace(".","_")}, MATCH_{i.upper().replace(".","_")}, MASK_{i.upper().replace(".","_")})\n'
+        declare_insn_str += f"DECLARE_INSN({i.replace('.', '_')}, MATCH_{i.upper().replace('.', '_')}, MASK_{i.upper().replace('.', '_')})\n"
 
     csr_names_str = ""
     declare_csr_str = ""
     for addr, name in sorted(csrs.items()):
-        csr_names_str += f"#define CSR_{name.upper()} 0x{addr:x}\n"
-        declare_csr_str += f"DECLARE_CSR({name.lower()}, CSR_{name.upper()})\n"
+        csr_names_str += f"#define CSR_{name.upper().replace('.', '_')} 0x{addr:x}\n"
+        declare_csr_str += (
+            f"DECLARE_CSR({name.lower().replace('.', '_')}, CSR_{name.upper().replace('.', '_')})\n"
+        )
 
     causes_str = ""
     declare_cause_str = ""
@@ -377,10 +299,12 @@ def main():
         comment = f"{details['location']}"
         if details.get("original_name"):
             comment += f" (from {details['original_name']})"
-        field_str += f"#define INSN_FIELD_{sanitized_name.upper()} {details['mask']}  /* {comment} */\n"
+        field_str += (
+            f"#define INSN_FIELD_{sanitized_name.upper()} {details['mask']}  /* {comment} */\n"
+        )
 
     # Assemble final output
-    output_str = f"""/* SPDX-License-Identifier: BSD-3-Clause */
+    output_str = f"""/* SPDX-License-Identifier: BSD-3-Clause-Clear */
 /* Copyright (c) 2023 RISC-V International */
 /*
  * This file is auto-generated by riscv-unified-db
